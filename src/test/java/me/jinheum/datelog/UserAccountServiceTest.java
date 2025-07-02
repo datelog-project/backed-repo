@@ -35,18 +35,15 @@ class UserAccountServiceTest {
 
     @Test
     void 회원가입_성공() {
-        // given
+
         SignupRequest request = new SignupRequest("진흠", "jinhum@test.com", "1234");
 
-        // 비밀번호 암호화
-        String hashedPassword = "$2a$10$abc123";  // mock된 해시값
+        String hashedPassword = "$2a$10$abc123";
         Mockito.when(passwordEncoder.encode("1234")).thenReturn(hashedPassword);
 
-        // 중복 없는 tag 생성
         Mockito.when(userAccountRepository.findByNameAndTag(eq("진흠"), anyString()))
                 .thenReturn(Optional.empty());
 
-        // 저장될 User 객체 (mock)
         UserAccount savedUser = UserAccount.builder()
                 .id(UUID.randomUUID())
                 .name("진흠")
@@ -58,11 +55,45 @@ class UserAccountServiceTest {
 
         Mockito.when(userAccountRepository.save(any())).thenReturn(savedUser);
 
-        // when
         SignupResponse response = userAccountService.signup(request);
 
-        // then
+
         assertNotNull(response.id());
         assertEquals("진흠#1234", response.username());
     }
+
+//     @Test
+//     void 로그인_성공() {
+
+//         String rawPassword = "1234";
+//         String encodedPassword = "$2a$10$abcdefghijklmnopqrstuv1234567890abcdefghi3"; 
+//         String email = "jinhum@test.com";
+
+
+//         UserAccount existingUser = UserAccount.builder()
+//                 .id(UUID.randomUUID())
+//                 .name("진흠")
+//                 .tag("1234")
+//                 .username("진흠#1234")
+//                 .email(email)
+//                 .password(encodedPassword)
+//                 .build();
+
+     
+//         Mockito.when(userAccountRepository.findByEmail(email))
+//                 .thenReturn(Optional.of(existingUser));
+
+
+//         Mockito.when(passwordEncoder.matches(rawPassword, encodedPassword))
+//                 .thenReturn(true);
+
+
+//         UserAccount loginUser = userAccountService.login(email, rawPassword);
+
+
+//         assertNotNull(loginUser);
+//         assertEquals(email, loginUser.getEmail());
+//         assertEquals(existingUser.getUsername(), loginUser.getUsername());
+//     }
+
 }

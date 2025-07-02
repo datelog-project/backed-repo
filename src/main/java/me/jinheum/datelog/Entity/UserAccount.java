@@ -2,6 +2,7 @@ package me.jinheum.datelog.Entity;
 
 import java.util.UUID;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -28,6 +29,7 @@ public class UserAccount {
     
     private String username;
 
+    @Column(unique = true)
     private String email;
 
     private String password;

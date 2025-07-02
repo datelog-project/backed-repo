@@ -9,4 +9,5 @@ import me.jinheum.datelog.Entity.UserAccount;
 
 public interface UserAccountRepository extends JpaRepository<UserAccount, UUID>{
     Optional<UserAccount> findByNameAndTag(String name, String tag);
+    Optional<UserAccount> findByEmail(String email);
 }
