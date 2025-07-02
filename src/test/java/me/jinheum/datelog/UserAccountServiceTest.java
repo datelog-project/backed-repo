@@ -7,7 +7,6 @@ import static org.mockito.ArgumentMatchers.*;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -37,16 +36,6 @@ class UserAccountServiceTest {
 
     @Mock
     private JwtProvider jwtProvider;
-
-
-    @BeforeEach
-    void setUp() {
-        userAccountService = new UserAccountService(
-            userAccountRepository,
-            passwordEncoder,
-            jwtProvider
-        );
-    }
 
     @InjectMocks
     private UserAccountService userAccountService;
@@ -82,11 +71,12 @@ class UserAccountServiceTest {
 
     @Test
     void 로그인_성공() {
+
         String rawPassword = "1234";
-        String encodedPassword = "$2a$10$abcdefghijklmnopqrstuv1234567890abcdefghi3";
+        String encodedPassword = "$2a$10$fakeHashHereFakeHashHere123456";
         String email = "jinhum@test.com";
 
-        UserAccount existingUser = UserAccount.builder()
+        UserAccount user = UserAccount.builder()
                 .id(UUID.randomUUID())
                 .name("진흠")
                 .tag("1234")
@@ -95,26 +85,29 @@ class UserAccountServiceTest {
                 .password(encodedPassword)
                 .build();
 
+
         Mockito.when(userAccountRepository.findByEmail(email))
-                .thenReturn(Optional.of(existingUser));
+                .thenReturn(Optional.of(user));
 
         Mockito.when(passwordEncoder.matches(rawPassword, encodedPassword))
                 .thenReturn(true);
 
         Mockito.when(jwtProvider.generatedAccessToken(Mockito.any(), Mockito.any()))
-                .thenReturn("dummyAccessToken");
+                .thenReturn("mockAccessToken");
 
         Mockito.when(jwtProvider.generatedRefreshToken(Mockito.any()))
-                .thenReturn("dummyRefreshToken");
+                .thenReturn("mockRefreshToken");
 
+  
         SigninRequest request = new SigninRequest(email, rawPassword);
         MockHttpServletResponse response = new MockHttpServletResponse();
 
         SigninResponse result = userAccountService.signin(request, response);
 
-        assertNotNull(result);
-        assertEquals(email, existingUser.getEmail());
-        assertEquals(existingUser.getUsername(), result.username());
-    }
 
+        assertNotNull(result);
+        assertEquals(user.getId(), result.id());
+        assertEquals(user.getUsername(), result.username());
+        assertEquals("mockAccessToken", result.accessToken());
+    }
 }
