@@ -3,7 +3,10 @@ package me.jinheum.datelog;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
 
+import java.time.Duration;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -13,6 +16,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -39,6 +44,12 @@ class UserAccountServiceTest {
 
     @InjectMocks
     private UserAccountService userAccountService;
+
+    @Mock
+    private StringRedisTemplate redisTemplate;
+
+    @Mock
+    private ValueOperations<String, String> valueOperations;
 
     @Test
     void 회원가입_성공() {
@@ -71,10 +82,12 @@ class UserAccountServiceTest {
 
     @Test
     void 로그인_성공() {
-
+        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+        doNothing().when(valueOperations).set(anyString(), anyString(), any(Duration.class));
+    
         String rawPassword = "1234";
         String encodedPassword = "$2a$10$fakeHashHereFakeHashHere123456";
-        String email = "jinhum@test.com";
+        String email = "jinheum@test.com";
 
         UserAccount user = UserAccount.builder()
                 .id(UUID.randomUUID())
@@ -84,7 +97,6 @@ class UserAccountServiceTest {
                 .email(email)
                 .password(encodedPassword)
                 .build();
-
 
         Mockito.when(userAccountRepository.findByEmail(email))
                 .thenReturn(Optional.of(user));
@@ -98,16 +110,33 @@ class UserAccountServiceTest {
         Mockito.when(jwtProvider.generatedRefreshToken(Mockito.any()))
                 .thenReturn("mockRefreshToken");
 
-  
+
         SigninRequest request = new SigninRequest(email, rawPassword);
         MockHttpServletResponse response = new MockHttpServletResponse();
 
         SigninResponse result = userAccountService.signin(request, response);
 
-
         assertNotNull(result);
         assertEquals(user.getId(), result.id());
         assertEquals(user.getUsername(), result.username());
         assertEquals("mockAccessToken", result.accessToken());
+    }
+    @Test
+    void 로그아웃_성공() {
+        UUID userId = UUID.randomUUID();
+        String redisKey = "refreshToken:" + userId;
+
+        Mockito.when(redisTemplate.delete(redisKey)).thenReturn(true);
+
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        userAccountService.signout(userId, response);
+
+        String setCookieHeader = response.getHeader("Set-Cookie");
+        assertNotNull(setCookieHeader);
+        assertEquals(true, setCookieHeader.contains("refreshToken="));
+        assertEquals(true, setCookieHeader.contains("Max-Age=0"));
+
+        Mockito.verify(redisTemplate).delete(redisKey);
     }
 }
