@@ -28,9 +28,9 @@ public class UserAccountController {
     }
 
     @PostMapping("/signin")
-    public ResponseEntity<SigninResponse> login(@RequestBody SigninRequest request,
+    public ResponseEntity<SigninResponse> signin(@RequestBody SigninRequest request,
                                                HttpServletResponse response) {
-        SigninResponse loginResponse = userAccountService.login(request, response);
+        SigninResponse loginResponse = userAccountService.signin(request, response);
         return ResponseEntity.ok(loginResponse);
     }
 

@@ -64,26 +64,26 @@ public class UserAccountService {
         throw new RuntimeException("중복으로 인해 유효한 tag 생성 실패");
     }
 
-     public SigninResponse login(SigninRequest request, HttpServletResponse response) {
-        UserAccount user = userAccountRepository.findByEmail(request.email())
-                .orElseThrow(() -> new RuntimeException("이메일 또는 비밀번호가 올바르지 않습니다."));
+    public SigninResponse signin(SigninRequest request, HttpServletResponse response) {
+    UserAccount user = userAccountRepository.findByEmail(request.email())
+            .orElseThrow(() -> new RuntimeException("이메일 또는 비밀번호가 올바르지 않습니다."));
 
-        if (!passwordEncoder.matches(request.password(), user.getPassword())) {
-            throw new RuntimeException("이메일 또는 비밀번호가 올바르지 않습니다.");
-        }
-
-        String accessToken = jwtProvider.generatedAccessToken(user.getId(), user.getUsername());
-        String refreshToken = jwtProvider.generatedRefreshToken(user.getId());
-
-        ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken)
-                .httpOnly(true)
-                .secure(true)
-                .path("/")
-                .maxAge(refreshTokenValidity.getSeconds())
-                .build();
-
-        response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
-
-        return new SigninResponse(user.getId(), user.getUsername(), accessToken);
+    if (!passwordEncoder.matches(request.password(), user.getPassword())) {
+        throw new RuntimeException("이메일 또는 비밀번호가 올바르지 않습니다.");
     }
+
+    String accessToken = jwtProvider.generatedAccessToken(user.getId(), user.getUsername());
+    String refreshToken = jwtProvider.generatedRefreshToken(user.getId());
+
+    ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken)
+            .httpOnly(true)
+            .secure(true)
+            .path("/")
+            .maxAge(refreshTokenValidity.getSeconds())
+            .build();
+
+    response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
+
+    return new SigninResponse(user.getId(), user.getUsername(), accessToken);
+}
 }
