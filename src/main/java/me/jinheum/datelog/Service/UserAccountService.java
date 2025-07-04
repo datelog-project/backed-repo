@@ -68,6 +68,9 @@ public class UserAccountService {
         throw new RuntimeException("중복으로 인해 유효한 tag 생성 실패");
     }
 
+
+
+
     public SigninResponse signin(SigninRequest request, HttpServletResponse response) {
         UserAccount user = userAccountRepository.findByEmail(request.email())
                 .orElseThrow(() -> new RuntimeException("이메일 또는 비밀번호가 올바르지 않습니다."));
@@ -93,6 +96,9 @@ public class UserAccountService {
 
         return new SigninResponse(user.getId(), user.getUsername(), accessToken);
     }
+
+
+    
 
     public void signout(UUID userId, HttpServletResponse response) {
 
