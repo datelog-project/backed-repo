@@ -1,4 +1,4 @@
-package me.jinheum.datelog.DTO;
+package me.jinheum.datelog.dto;
 
 import java.util.UUID;
 

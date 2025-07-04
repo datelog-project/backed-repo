@@ -1,4 +1,4 @@
-package me.jinheum.datelog.Service;
+package me.jinheum.datelog.service;
 
 import org.springframework.http.HttpHeaders;
 
@@ -12,13 +12,14 @@ import org.springframework.stereotype.Service;
 
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import me.jinheum.datelog.DTO.SigninRequest;
-import me.jinheum.datelog.DTO.SigninResponse;
-import me.jinheum.datelog.DTO.SignupRequest;
-import me.jinheum.datelog.DTO.SignupResponse;
-import me.jinheum.datelog.Entity.UserAccount;
-import me.jinheum.datelog.Repository.UserAccountRepository;
-import me.jinheum.datelog.Security.JwtProvider;
+import me.jinheum.datelog.dto.SigninRequest;
+import me.jinheum.datelog.dto.SigninResponse;
+import me.jinheum.datelog.dto.SignupRequest;
+import me.jinheum.datelog.dto.SignupResponse;
+import me.jinheum.datelog.entity.UserAccount;
+import me.jinheum.datelog.repository.UserAccountRepository;
+import me.jinheum.datelog.security.JwtProvider;
+
 import org.springframework.data.redis.core.StringRedisTemplate;
 
 @Service
