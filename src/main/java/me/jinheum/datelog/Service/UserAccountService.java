@@ -4,7 +4,6 @@ import org.springframework.http.HttpHeaders;
 
 import java.time.Duration;
 import java.util.Random;
-import java.util.UUID;
 
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -97,20 +96,4 @@ public class UserAccountService {
         return new SigninResponse(user.getId(), user.getUsername(), accessToken);
     }
 
-
-    
-
-    public void signout(UUID userId, HttpServletResponse response) {
-
-        redisTemplate.delete("refreshToken:" + userId);
-
-        ResponseCookie deleteCookie = ResponseCookie.from("refreshToken", "")
-                .httpOnly(true)
-                .secure(true)
-                .path("/")
-                .maxAge(0)
-                .build();
-
-        response.addHeader(HttpHeaders.SET_COOKIE, deleteCookie.toString());
-    }
 }

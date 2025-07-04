@@ -24,7 +24,7 @@ public class JwtProvider {
 
     private final Key key;
 
-    private final Duration accessTokenValidity = Duration.ofMinutes(30);
+    private final Duration accessTokenValidity = Duration.ofMinutes(5);
     private final Duration refreshTokenValidity = Duration.ofDays(7);
 
     public JwtProvider(@Value("${jwt.secret}") String secretKey) {
