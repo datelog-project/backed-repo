@@ -12,6 +12,8 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SecurityException;
+import me.jinheum.datelog.exception.InvalidTokenException;
+import me.jinheum.datelog.exception.TokenExpiredException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -54,25 +56,22 @@ public class JwtProvider {
                 .compact();
     }
 
-    public boolean validateToken(String token) {
+    public void validateToken(String token) {
         try {
             Jwts.parserBuilder()
-                    .setSigningKey(key)
-                    .build()
-                    .parseClaimsJws(token);
-            return true;
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token);
         } catch (SecurityException | MalformedJwtException e) {
-            System.out.println("Invalid JWT signature");
+            throw new InvalidTokenException("Invalid JWT signature");
         } catch (ExpiredJwtException e) {
-            System.out.println("Expired JWT token");
+            throw new TokenExpiredException("Expired JWT token");
         } catch (UnsupportedJwtException e) {
-            System.out.println("Unsupported JWT token");
+            throw new InvalidTokenException("Unsupported JWT token");
         } catch (IllegalArgumentException e) {
-            System.out.println("JWT claims string is empty.");
+            throw new InvalidTokenException("JWT claims string is empty.");
         }
-        return false;
     }
-
     public UUID getUserId(String token) {
         Claims claims = extractAllClaims(token);
         return UUID.fromString(claims.getSubject());

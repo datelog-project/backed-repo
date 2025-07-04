@@ -13,6 +13,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import me.jinheum.datelog.entity.UserAccount;
+import me.jinheum.datelog.exception.InvalidTokenException;
+import me.jinheum.datelog.exception.TokenExpiredException;
 import me.jinheum.datelog.repository.UserAccountRepository;
 import me.jinheum.datelog.security.JwtProvider;
 
@@ -35,8 +37,9 @@ public class AuthService {
     public String reissue(HttpServletRequest request, HttpServletResponse response) {
         String refreshToken = extractRefreshTokenFromCookie(request);
 
-        if (refreshToken == null || !jwtProvider.validateToken(refreshToken)) {
-            throw new JwtException("유효하지 않은 refresh token");
+        try {
+            jwtProvider.validateToken(refreshToken);
+        } catch (TokenExpiredException | InvalidTokenException e) {
         }
 
         UUID userId = jwtProvider.getUserId(refreshToken);
