@@ -1,4 +1,4 @@
-package me.jinheum.datelog.Controller;
+package me.jinheum.datelog.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -8,11 +8,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import me.jinheum.datelog.DTO.SigninRequest;
-import me.jinheum.datelog.DTO.SigninResponse;
-import me.jinheum.datelog.DTO.SignupRequest;
-import me.jinheum.datelog.DTO.SignupResponse;
-import me.jinheum.datelog.Service.UserAccountService;
+import me.jinheum.datelog.dto.SigninRequest;
+import me.jinheum.datelog.dto.SigninResponse;
+import me.jinheum.datelog.dto.SignupRequest;
+import me.jinheum.datelog.dto.SignupResponse;
+import me.jinheum.datelog.service.UserAccountService;
 
 @RestController
 @RequiredArgsConstructor

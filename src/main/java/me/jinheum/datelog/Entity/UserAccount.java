@@ -1,4 +1,4 @@
-package me.jinheum.datelog.Entity;
+package me.jinheum.datelog.entity;
 
 import java.util.UUID;
 

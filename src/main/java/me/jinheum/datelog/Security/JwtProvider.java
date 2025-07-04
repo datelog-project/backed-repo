@@ -1,4 +1,4 @@
-package me.jinheum.datelog.Security;
+package me.jinheum.datelog.security;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;

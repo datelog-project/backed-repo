@@ -16,14 +16,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import me.jinheum.datelog.DTO.SigninRequest;
-import me.jinheum.datelog.DTO.SigninResponse;
-import me.jinheum.datelog.DTO.SignupRequest;
-import me.jinheum.datelog.DTO.SignupResponse;
-import me.jinheum.datelog.Entity.UserAccount;
-import me.jinheum.datelog.Repository.UserAccountRepository;
-import me.jinheum.datelog.Security.JwtProvider;
-import me.jinheum.datelog.Service.UserAccountService;
+import me.jinheum.datelog.entity.UserAccount;
+import me.jinheum.datelog.security.JwtProvider;
+import me.jinheum.datelog.service.UserAccountService;
+import me.jinheum.datelog.dto.SigninRequest;
+import me.jinheum.datelog.dto.SigninResponse;
+import me.jinheum.datelog.dto.SignupRequest;
+import me.jinheum.datelog.dto.SignupResponse;
+import me.jinheum.datelog.repository.UserAccountRepository;
 
 @ExtendWith(MockitoExtension.class)
 class UserAccountServiceTest {
