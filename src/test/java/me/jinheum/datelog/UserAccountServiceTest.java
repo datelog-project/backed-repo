@@ -107,7 +107,7 @@ class UserAccountServiceTest {
         Mockito.when(jwtProvider.generatedAccessToken(Mockito.any(), Mockito.any()))
                 .thenReturn("mockAccessToken");
 
-        Mockito.when(jwtProvider.generatedRefreshToken(Mockito.any(), Mockito.any()))
+        Mockito.when(jwtProvider.generatedRefreshToken(Mockito.any()))
                 .thenReturn("mockRefreshToken");
 
 

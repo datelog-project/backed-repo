@@ -44,7 +44,7 @@ public class JwtProvider {
                 .compact();
     }
 
-    public String generatedRefreshToken(UUID id, String username) { //리프레시 토큰 생성
+    public String generatedRefreshToken(UUID id) { //리프레시 토큰 생성
         Date now = new Date();
         Date expiry = new Date(now.getTime() + refreshTokenValidity.toMillis());
 

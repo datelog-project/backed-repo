@@ -50,7 +50,7 @@ public class AuthService {
 
         String username = getUsernameById(userId);
         String newAccessToken = jwtProvider.generatedAccessToken(userId, username);
-        String newRefreshToken = jwtProvider.generatedRefreshToken(userId, username);
+        String newRefreshToken = jwtProvider.generatedRefreshToken(userId);
         tokenService.saveRefreshToken(userId, newRefreshToken);
 
         ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", newRefreshToken) //쿠키에 새로운 리프레시 토큰 저장
