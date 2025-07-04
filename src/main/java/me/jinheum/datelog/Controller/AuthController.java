@@ -17,7 +17,7 @@ public class AuthController {
     private final AuthService authService;
 
 
-    @PostMapping("/reissue")
+    @PostMapping("/reissue") //리프레시 토큰 재발급
     public ResponseEntity<AccessTokenResponse> reissue(
             HttpServletRequest request,
             HttpServletResponse response

@@ -79,7 +79,7 @@ public class UserAccountService {
         }
 
         String accessToken = jwtProvider.generatedAccessToken(user.getId(), user.getUsername());
-        String refreshToken = jwtProvider.generatedRefreshToken(user.getId());
+        String refreshToken = jwtProvider.generatedRefreshToken(user.getId(),user.getUsername());
 
         String redisKey = "refreshToken:" + user.getId();
         redisTemplate.opsForValue().set(redisKey, refreshToken, refreshTokenValidity);

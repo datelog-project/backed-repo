@@ -22,13 +22,13 @@ public class UserAccountController {
     
     private final UserAccountService userAccountService;
     
-    @PostMapping("/signup")
+    @PostMapping("/signup") //회원가입
     public ResponseEntity<SignupResponse> signup(@RequestBody SignupRequest request) {
         SignupResponse response = userAccountService.signup(request);
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/signin")
+    @PostMapping("/signin") //로그인
     public ResponseEntity<SigninResponse> signin(@RequestBody SigninRequest request,
                                                HttpServletResponse response) {
         SigninResponse loginResponse = userAccountService.signin(request, response);

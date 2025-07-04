@@ -34,7 +34,7 @@ public class SecurityConfig {
         .requestMatchers("/auth/signup").permitAll()
         .requestMatchers("/reissue").permitAll()
         .anyRequest().authenticated())
-        .addFilterBefore(signoutFilter(), UsernamePasswordAuthenticationFilter.class);
+        .addFilterBefore(signoutFilter(), UsernamePasswordAuthenticationFilter.class); //로그인 처리보다 앞에서 처리함
         return http.build();
     }
 

@@ -28,13 +28,13 @@ public class AuthService {
 
     private final Duration refreshTokenValidity = Duration.ofDays(7);
 
-    public String getUsernameById(UUID userId) {
+    public String getUsernameById(UUID userId) { // DB 조회해서 username꺼냄 (토큰 만료됐을 때)
         return userAccountRepository.findById(userId)
                 .map(UserAccount::getUsername)
                 .orElseThrow(() -> new RuntimeException("유저를 찾을 수 없습니다."));
     }
 
-    public String reissue(HttpServletRequest request, HttpServletResponse response) {
+    public String reissue(HttpServletRequest request, HttpServletResponse response) { //리프레시 토큰 검증해서 새로운 엑세스 토큰 발급
         String refreshToken = extractRefreshTokenFromCookie(request);
 
         try {
@@ -44,16 +44,16 @@ public class AuthService {
 
         UUID userId = jwtProvider.getUserId(refreshToken);
 
-        if (!tokenService.isRefreshTokenValid(userId, refreshToken)) {
+        if (!tokenService.isRefreshTokenValid(userId, refreshToken)) { // 리프레시토큰 검증
             throw new JwtException("저장된 refresh token과 일치하지 않음");
         }
 
         String username = getUsernameById(userId);
         String newAccessToken = jwtProvider.generatedAccessToken(userId, username);
-        String newRefreshToken = jwtProvider.generatedRefreshToken(userId);
+        String newRefreshToken = jwtProvider.generatedRefreshToken(userId, username);
         tokenService.saveRefreshToken(userId, newRefreshToken);
 
-        ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", newRefreshToken)
+        ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", newRefreshToken) //쿠키에 새로운 리프레시 토큰 저장
                 .httpOnly(true)
                 .secure(true)
                 .path("/")
@@ -66,7 +66,7 @@ public class AuthService {
         return newAccessToken;
     }
 
-    private String extractRefreshTokenFromCookie(HttpServletRequest request) {
+    private String extractRefreshTokenFromCookie(HttpServletRequest request) { //쿠키에서 리프레시 토큰 추출
         if (request.getCookies() == null) return null;
         for (Cookie cookie : request.getCookies()) {
             if ("refreshToken".equals(cookie.getName())) {

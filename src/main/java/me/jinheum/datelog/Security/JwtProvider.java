@@ -24,14 +24,14 @@ public class JwtProvider {
 
     private final Key key;
 
-    private final Duration accessTokenValidity = Duration.ofMinutes(5);
-    private final Duration refreshTokenValidity = Duration.ofDays(7);
+    private final Duration accessTokenValidity = Duration.ofMinutes(5); //엑세스 토큰 유효기간 5분
+    private final Duration refreshTokenValidity = Duration.ofDays(7); //리프레시 토큰 유효기간 7일
 
     public JwtProvider(@Value("${jwt.secret}") String secretKey) {
         this.key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String generatedAccessToken(UUID id, String username) {
+    public String generatedAccessToken(UUID id, String username) { //엑세스 토큰 생성
         Date now = new Date();
         Date expiry = new Date(now.getTime() + accessTokenValidity.toMillis());
 
@@ -44,7 +44,7 @@ public class JwtProvider {
                 .compact();
     }
 
-    public String generatedRefreshToken(UUID id) {
+    public String generatedRefreshToken(UUID id, String username) { //리프레시 토큰 생성
         Date now = new Date();
         Date expiry = new Date(now.getTime() + refreshTokenValidity.toMillis());
 
@@ -56,7 +56,7 @@ public class JwtProvider {
                 .compact();
     }
 
-    public void validateToken(String token) {
+    public void validateToken(String token) { //토큰 검증
         try {
             Jwts.parserBuilder()
                 .setSigningKey(key)
@@ -72,18 +72,18 @@ public class JwtProvider {
             throw new InvalidTokenException("JWT claims string is empty.");
         }
     }
-    public UUID getUserId(String token) {
+    public UUID getUserId(String token) { //토큰에서 id 추출
         Claims claims = extractAllClaims(token);
         return UUID.fromString(claims.getSubject());
     }
 
-    public String getUsername(String token) {
+    public String getUsername(String token) { //토큰에서 username 추출
         Claims claims = extractAllClaims(token);
         return claims.get("username", String.class);
     }
 
 
-    private Claims extractAllClaims(String token) {
+    private Claims extractAllClaims(String token) { //토큰에서 모든 클레임 추출
         return Jwts.parserBuilder()
                 .setSigningKey(key)
                 .build()

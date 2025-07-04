@@ -30,12 +30,9 @@ public class TokenService {
         return redisTemplate.opsForValue().get(buildKey(userId));
     }
 
-    public void deleteRefreshToken(UUID userId) {
-        redisTemplate.delete(buildKey(userId));
-    }
-
     public boolean isRefreshTokenValid(UUID userId, String refreshToken) {
         String storedToken = getRefreshToken(userId);
         return storedToken != null && storedToken.equals(refreshToken);
     }
+    
 }

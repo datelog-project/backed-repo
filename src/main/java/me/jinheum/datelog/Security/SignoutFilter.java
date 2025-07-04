@@ -32,9 +32,9 @@ public class SignoutFilter extends OncePerRequestFilter {
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
                 String token = authHeader.substring(7);
                 UUID userId = jwtProvider.getUserId(token);
-                redisTemplate.delete("refreshToken:" + userId);
+                redisTemplate.delete("refreshToken:" + userId); //토큰 추출하고 id에 맞는 리프레시 토큰 redis에서 삭제
 
-                ResponseCookie cookie = ResponseCookie.from("refreshToken", "")
+                ResponseCookie cookie = ResponseCookie.from("refreshToken", "") //쿠키에서도 리프레시 토큰 삭제
                         .httpOnly(true)
                         .secure(true)
                         .path("/")
