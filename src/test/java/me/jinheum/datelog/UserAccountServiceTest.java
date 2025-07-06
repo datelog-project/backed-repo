@@ -59,14 +59,10 @@ class UserAccountServiceTest {
         String hashedPassword = "$2a$10$abc123";
         Mockito.when(passwordEncoder.encode("1234")).thenReturn(hashedPassword);
 
-        Mockito.when(userAccountRepository.findByNameAndTag(eq("진흠"), anyString()))
-                .thenReturn(Optional.empty());
 
         UserAccount savedUser = UserAccount.builder()
                 .id(UUID.randomUUID())
                 .name("진흠")
-                .tag("1234")
-                .username("진흠#1234")
                 .email("jinhum@test.com")
                 .password(hashedPassword)
                 .build();
@@ -77,7 +73,6 @@ class UserAccountServiceTest {
 
 
         assertNotNull(response.id());
-        assertEquals("진흠#1234", response.username());
     }
 
     @Test
@@ -92,8 +87,6 @@ class UserAccountServiceTest {
         UserAccount user = UserAccount.builder()
                 .id(UUID.randomUUID())
                 .name("진흠")
-                .tag("1234")
-                .username("진흠#1234")
                 .email(email)
                 .password(encodedPassword)
                 .build();
@@ -104,7 +97,7 @@ class UserAccountServiceTest {
         Mockito.when(passwordEncoder.matches(rawPassword, encodedPassword))
                 .thenReturn(true);
 
-        Mockito.when(jwtProvider.generatedAccessToken(Mockito.any(), Mockito.any()))
+        Mockito.when(jwtProvider.generatedAccessToken(Mockito.any()))
                 .thenReturn("mockAccessToken");
 
         Mockito.when(jwtProvider.generatedRefreshToken(Mockito.any()))
@@ -118,7 +111,6 @@ class UserAccountServiceTest {
 
         assertNotNull(result);
         assertEquals(user.getId(), result.id());
-        assertEquals(user.getUsername(), result.username());
         assertEquals("mockAccessToken", result.accessToken());
     }
     

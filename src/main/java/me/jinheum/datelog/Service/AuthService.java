@@ -1,6 +1,5 @@
 package me.jinheum.datelog.service;
 
-import java.time.Duration;
 import java.util.UUID;
 
 import org.springframework.http.HttpHeaders;
@@ -12,53 +11,39 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import me.jinheum.datelog.entity.UserAccount;
+import me.jinheum.datelog.config.JwtProperties;
 import me.jinheum.datelog.exception.InvalidTokenException;
-import me.jinheum.datelog.exception.TokenExpiredException;
-import me.jinheum.datelog.repository.UserAccountRepository;
 import me.jinheum.datelog.security.JwtProvider;
+import me.jinheum.datelog.util.CookieUtil;
 
 @Service
 @RequiredArgsConstructor
 public class AuthService {
 
-    private final UserAccountRepository userAccountRepository;
     private final JwtProvider jwtProvider;
     private final TokenService tokenService;
-
-    private final Duration refreshTokenValidity = Duration.ofDays(7);
-
-    public String getUsernameById(UUID userId) { // DB 조회해서 username꺼냄 (토큰 만료됐을 때)
-        return userAccountRepository.findById(userId)
-                .map(UserAccount::getUsername)
-                .orElseThrow(() -> new RuntimeException("유저를 찾을 수 없습니다."));
-    }
+    private final JwtProperties jwtProperties;
+    private final CookieUtil cookieUtil;
 
     public String reissue(HttpServletRequest request, HttpServletResponse response) { //리프레시 토큰 검증해서 새로운 엑세스 토큰 발급
         String refreshToken = extractRefreshTokenFromCookie(request);
 
-        try {
-            jwtProvider.validateToken(refreshToken);
-        } catch (TokenExpiredException | InvalidTokenException e) {
+        if (refreshToken == null || refreshToken.isBlank()) {
+            throw new InvalidTokenException("Refresh Token이 존재하지 않습니다.");
         }
+        jwtProvider.validateToken(refreshToken);
 
         UUID userId = jwtProvider.getUserId(refreshToken);
 
-        if (!tokenService.isRefreshTokenValid(userId, refreshToken)) { // 리프레시토큰 검증
+        if (!jwtProvider.isRefreshTokenValid(userId, refreshToken)) { // 리프레시토큰 검증
             throw new JwtException("저장된 refresh token과 일치하지 않음");
         }
 
-        String username = getUsernameById(userId);
-        String newAccessToken = jwtProvider.generatedAccessToken(userId, username);
+        String newAccessToken = jwtProvider.generatedAccessToken(userId);
         String newRefreshToken = jwtProvider.generatedRefreshToken(userId);
         tokenService.saveRefreshToken(userId, newRefreshToken);
 
-        ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", newRefreshToken) //쿠키에 새로운 리프레시 토큰 저장
-                .httpOnly(true)
-                .secure(true)
-                .path("/")
-                .maxAge(refreshTokenValidity.getSeconds())
-                .build();
+        ResponseCookie refreshCookie = cookieUtil.createRefreshTokenCookie(refreshToken, jwtProperties.getRefreshTokenValidity());
 
         response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
 

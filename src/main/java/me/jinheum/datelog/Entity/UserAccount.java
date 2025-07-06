@@ -24,10 +24,6 @@ public class UserAccount {
     private UUID id;
 
     private String name;
-    
-    private String tag;
-    
-    private String username;
 
     @Column(unique = true)
     private String email;

@@ -2,42 +2,44 @@ package me.jinheum.datelog.security;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
-import java.time.Duration;
 import java.util.Date;
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SecurityException;
+import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
+import me.jinheum.datelog.config.JwtProperties;
 import me.jinheum.datelog.exception.InvalidTokenException;
 import me.jinheum.datelog.exception.TokenExpiredException;
+import me.jinheum.datelog.service.TokenService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 
 @Component
+@RequiredArgsConstructor
 public class JwtProvider {
 
-    private final Key key;
+    private final JwtProperties jwtProperties;
+    private final TokenService tokenService;
+    private Key key;
 
-    private final Duration accessTokenValidity = Duration.ofMinutes(5); //엑세스 토큰 유효기간 5분
-    private final Duration refreshTokenValidity = Duration.ofDays(7); //리프레시 토큰 유효기간 7일
-
-    public JwtProvider(@Value("${jwt.secret}") String secretKey) {
-        this.key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
+    @PostConstruct
+    public void init() {
+        this.key = Keys.hmacShaKeyFor(jwtProperties.getSecret().getBytes(StandardCharsets.UTF_8));
     }
 
-    public String generatedAccessToken(UUID id, String username) { //엑세스 토큰 생성
+    public String generatedAccessToken(UUID id) { //엑세스 토큰 생성
         Date now = new Date();
-        Date expiry = new Date(now.getTime() + accessTokenValidity.toMillis());
+        Date expiry = new Date(now.getTime() + jwtProperties.getAccessTokenValidity().toMillis());
 
         return Jwts.builder()
                 .setSubject(id.toString())
-                .claim("username", username)
                 .setIssuedAt(now)
                 .setExpiration(expiry)
                 .signWith(key, SignatureAlgorithm.HS256)
@@ -46,7 +48,7 @@ public class JwtProvider {
 
     public String generatedRefreshToken(UUID id) { //리프레시 토큰 생성
         Date now = new Date();
-        Date expiry = new Date(now.getTime() + refreshTokenValidity.toMillis());
+        Date expiry = new Date(now.getTime() + jwtProperties.getRefreshTokenValidity().toMillis());
 
         return Jwts.builder()
                 .setSubject(id.toString())
@@ -63,23 +65,24 @@ public class JwtProvider {
                 .build()
                 .parseClaimsJws(token);
         } catch (SecurityException | MalformedJwtException e) {
-            throw new InvalidTokenException("Invalid JWT signature");
+            throw new InvalidTokenException("유효하지 않은 JWT 서명입니다.");
         } catch (ExpiredJwtException e) {
-            throw new TokenExpiredException("Expired JWT token");
+            throw new TokenExpiredException("만료된 JWT 토큰입니다.");
         } catch (UnsupportedJwtException e) {
-            throw new InvalidTokenException("Unsupported JWT token");
+            throw new InvalidTokenException("지원되지 않는 JWT 토큰입니다.");
         } catch (IllegalArgumentException e) {
-            throw new InvalidTokenException("JWT claims string is empty.");
+            throw new InvalidTokenException("JWT 클레임 문자열이 비어 있습니다.");
         }
     }
+
+    public boolean isRefreshTokenValid(UUID userId, String refreshToken) {
+        String storedToken = tokenService.getRefreshToken(userId);
+        return storedToken != null && storedToken.equals(refreshToken);
+    }
+    
     public UUID getUserId(String token) { //토큰에서 id 추출
         Claims claims = extractAllClaims(token);
         return UUID.fromString(claims.getSubject());
-    }
-
-    public String getUsername(String token) { //토큰에서 username 추출
-        Claims claims = extractAllClaims(token);
-        return claims.get("username", String.class);
     }
 
 

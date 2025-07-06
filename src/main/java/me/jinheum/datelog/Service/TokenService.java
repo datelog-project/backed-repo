@@ -1,19 +1,19 @@
 package me.jinheum.datelog.service;
 
-import java.time.Duration;
 import java.util.UUID;
 
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
+import me.jinheum.datelog.config.JwtProperties;
 
 @Service
 @RequiredArgsConstructor
 public class TokenService {
 
     private final StringRedisTemplate redisTemplate;
-    private final Duration refreshTokenValidity = Duration.ofDays(7);
+    private final JwtProperties jwtProperties;
 
     private static final String REFRESH_TOKEN_PREFIX = "refreshToken:";
 
@@ -23,16 +23,15 @@ public class TokenService {
 
     public void saveRefreshToken(UUID userId, String refreshToken) {
         String key = buildKey(userId);
-        redisTemplate.opsForValue().set(key, refreshToken, refreshTokenValidity);
+        redisTemplate.opsForValue().set(key, refreshToken, jwtProperties.getRefreshTokenValidity());
     }
 
     public String getRefreshToken(UUID userId) {
         return redisTemplate.opsForValue().get(buildKey(userId));
     }
 
-    public boolean isRefreshTokenValid(UUID userId, String refreshToken) {
-        String storedToken = getRefreshToken(userId);
-        return storedToken != null && storedToken.equals(refreshToken);
+    public void deleteRefreshToken(UUID userId) {
+        redisTemplate.delete(buildKey(userId));
     }
     
 }
