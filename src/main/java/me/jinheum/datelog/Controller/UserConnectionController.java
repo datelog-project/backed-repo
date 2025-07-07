@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
+import me.jinheum.datelog.dto.ApiResponse;
 import me.jinheum.datelog.dto.InviteRequest;
 import me.jinheum.datelog.dto.ReconnectRequest;
 import me.jinheum.datelog.entity.UserAccount;
@@ -25,37 +26,37 @@ public class UserConnectionController {
     private final UserConnectionService connectionService;
 
     @PostMapping("/invite")
-    public ResponseEntity<?> invite(@RequestBody InviteRequest request,
+    public ResponseEntity<ApiResponse> invite(@RequestBody InviteRequest request,
                                     @AuthenticationPrincipal UserAccount user) {
         connectionService.invitePartner(user.getId(), request.partnerEmail());
-        return ResponseEntity.ok("초대를 보냈습니다.");
+        return ResponseEntity.ok(new ApiResponse("초대를 보냈습니다."));
     }
 
     @PostMapping("/{connectionId}/accept")
-    public ResponseEntity<?> acceptInvite(@PathVariable UUID connectionId,
+    public ResponseEntity<ApiResponse> acceptInvite(@PathVariable UUID connectionId,
                                         @AuthenticationPrincipal UserAccount user) {
         connectionService.acceptInvite(connectionId, user.getId());
-        return ResponseEntity.ok("초대를 수락했습니다.");
+        return ResponseEntity.ok(new ApiResponse("초대를 수락했습니다."));
     }
 
     @PostMapping("/{connectionId}/reject")
-    public ResponseEntity<?> rejectInvite(@PathVariable UUID connectionId,
+    public ResponseEntity<ApiResponse> rejectInvite(@PathVariable UUID connectionId,
                                         @AuthenticationPrincipal UserAccount user) {
         connectionService.rejectInvite(connectionId, user.getId());
-        return ResponseEntity.ok("초대를 거절했습니다.");
+        return ResponseEntity.ok(new ApiResponse("초대를 거절했습니다."));
     }
 
     @PostMapping("/{connectionId}/end")
-    public ResponseEntity<?> endConnection(@PathVariable UUID connectionId,
+    public ResponseEntity<ApiResponse> endConnection(@PathVariable UUID connectionId,
                                            @AuthenticationPrincipal UserAccount user) {
         connectionService.endConnection(connectionId, user.getId());
-        return ResponseEntity.ok("연결이 종료되었습니다.");
+        return ResponseEntity.ok(new ApiResponse("연결이 종료되었습니다."));
     }
 
     @PostMapping("/reconnect")
-    public ResponseEntity<?> reconnect(@RequestBody ReconnectRequest request,
+    public ResponseEntity<ApiResponse> reconnect(@RequestBody ReconnectRequest request,
                                        @AuthenticationPrincipal UserAccount user) {
         connectionService.reconnectByEmail(user.getId(), request.partnerEmail());
-        return ResponseEntity.ok("재결합 되었습니다.");
+        return ResponseEntity.ok(new ApiResponse("재결합 되었습니다."));
     }
 }
