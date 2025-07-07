@@ -28,6 +28,7 @@ import me.jinheum.datelog.dto.SignupResponse;
 import me.jinheum.datelog.entity.UserAccount;
 import me.jinheum.datelog.repository.UserAccountRepository;
 import me.jinheum.datelog.security.JwtProvider;
+import me.jinheum.datelog.service.AuthService;
 import me.jinheum.datelog.service.UserAccountService;
 
 @ExtendWith(MockitoExtension.class)
@@ -47,6 +48,9 @@ class UserAccountServiceTest {
 
     @Mock
     private StringRedisTemplate redisTemplate;
+
+    @Mock
+    private AuthService authService;
 
     @Mock
     private ValueOperations<String, String> valueOperations;
@@ -97,17 +101,17 @@ class UserAccountServiceTest {
         Mockito.when(passwordEncoder.matches(rawPassword, encodedPassword))
                 .thenReturn(true);
 
-        Mockito.when(jwtProvider.generatedAccessToken(Mockito.any()))
+        Mockito.when(jwtProvider.generatedAccessToken(Mockito.any(),Mockito.any()))
                 .thenReturn("mockAccessToken");
 
-        Mockito.when(jwtProvider.generatedRefreshToken(Mockito.any()))
+        Mockito.when(jwtProvider.generatedRefreshToken(Mockito.any(),Mockito.any()))
                 .thenReturn("mockRefreshToken");
 
 
         SigninRequest request = new SigninRequest(email, rawPassword);
         MockHttpServletResponse response = new MockHttpServletResponse();
 
-        SigninResponse result = userAccountService.signin(request, response);
+        SigninResponse result = authService.signin(request, response);
 
         assertNotNull(result);
         assertEquals(user.getId(), result.id());
