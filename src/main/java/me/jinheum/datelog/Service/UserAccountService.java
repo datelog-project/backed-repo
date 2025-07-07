@@ -1,27 +1,18 @@
 package me.jinheum.datelog.service;
 
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseCookie;
+
+import java.util.UUID;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import me.jinheum.datelog.config.JwtProperties;
-import me.jinheum.datelog.dto.SigninRequest;
-import me.jinheum.datelog.dto.SigninResponse;
 import me.jinheum.datelog.dto.SignupRequest;
 import me.jinheum.datelog.dto.SignupResponse;
 import me.jinheum.datelog.entity.UserAccount;
 import me.jinheum.datelog.exception.EmailAlreadyExistsException;
-import me.jinheum.datelog.exception.InvalidCredentialsException;
 import me.jinheum.datelog.repository.UserAccountRepository;
-import me.jinheum.datelog.security.JwtProvider;
-import me.jinheum.datelog.util.CookieUtil;
 
-
-import org.springframework.data.redis.core.StringRedisTemplate;
 
 @Service
 @RequiredArgsConstructor
@@ -29,10 +20,7 @@ public class UserAccountService {
     
     private final UserAccountRepository userAccountRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtProvider jwtProvider;
-    private final JwtProperties jwtProperties;
-    private final StringRedisTemplate redisTemplate;
-    private final CookieUtil cookieUtil;
+
 
     public SignupResponse signup(SignupRequest request) {
         if (userAccountRepository.findByEmail(request.email()).isPresent()) {
@@ -51,25 +39,13 @@ public class UserAccountService {
         return new SignupResponse(saved.getId());
     }
 
+    public UserAccount getUserById(UUID id) {
+        return userAccountRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
+    }
 
-    public SigninResponse signin(SigninRequest request, HttpServletResponse response) {
-        UserAccount user = userAccountRepository.findByEmail(request.email())
-                .orElseThrow(() -> new InvalidCredentialsException("이메일 또는 비밀번호가 올바르지 않습니다."));
-
-        if (!passwordEncoder.matches(request.password(), user.getPassword())) {
-            throw new InvalidCredentialsException("이메일 또는 비밀번호가 올바르지 않습니다.");
-        }
-
-        String accessToken = jwtProvider.generatedAccessToken(user.getId(),user.getEmail());
-        String refreshToken = jwtProvider.generatedRefreshToken(user.getId(),user.getEmail());
-
-        String redisKey = "refreshToken:" + user.getId();
-        redisTemplate.opsForValue().set(redisKey, refreshToken, jwtProperties.getRefreshTokenValidity());
-
-        ResponseCookie refreshCookie = cookieUtil.createRefreshTokenCookie(refreshToken, jwtProperties.getRefreshTokenValidity());
-
-        response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
-
-        return new SigninResponse(user.getId(), accessToken);
-        }
+    public UserAccount getUserByEmail(String email) {
+        return userAccountRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("해당 이메일의 유저가 존재하지 않습니다."));
+    }
 }
