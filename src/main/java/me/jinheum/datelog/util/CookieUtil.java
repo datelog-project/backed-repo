@@ -10,7 +10,7 @@ public class CookieUtil {
     public ResponseCookie createRefreshTokenCookie(String refreshToken, Duration maxAge) {
         return ResponseCookie.from("refreshToken", refreshToken)
                 .httpOnly(true)
-                .secure(true)
+                .secure(false)
                 .sameSite("Strict")
                 .path("/")
                 .maxAge(maxAge.getSeconds())
@@ -20,7 +20,7 @@ public class CookieUtil {
     public ResponseCookie deleteRefreshTokenCookie() {
         return ResponseCookie.from("refreshToken", "")
                 .httpOnly(true)
-                .secure(true)
+                .secure(false)
                 .sameSite("Strict")
                 .path("/")
                 .maxAge(0)

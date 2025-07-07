@@ -1,9 +1,11 @@
 package me.jinheum.datelog.controller;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -14,8 +16,9 @@ import me.jinheum.datelog.dto.SigninResponse;
 import me.jinheum.datelog.service.AuthService;
 import me.jinheum.datelog.service.UserAccountService;
 
-@Controller
+@RestController
 @RequiredArgsConstructor
+@RequestMapping("/auth")
 public class AuthController {
     
     private final AuthService authService;
@@ -35,5 +38,10 @@ public class AuthController {
                                                HttpServletResponse response) {
         SigninResponse loginResponse = userAccountService.signin(request, response);
         return ResponseEntity.ok(loginResponse);
+    }
+
+    @GetMapping("/hello")
+    public String hello() {
+        return "hello";
     }
 }

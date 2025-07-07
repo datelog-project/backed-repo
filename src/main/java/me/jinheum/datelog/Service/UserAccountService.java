@@ -1,9 +1,8 @@
 package me.jinheum.datelog.service;
 
 import org.springframework.http.HttpHeaders;
-
-
 import org.springframework.http.ResponseCookie;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +19,7 @@ import me.jinheum.datelog.exception.InvalidCredentialsException;
 import me.jinheum.datelog.repository.UserAccountRepository;
 import me.jinheum.datelog.security.JwtProvider;
 import me.jinheum.datelog.util.CookieUtil;
+
 
 import org.springframework.data.redis.core.StringRedisTemplate;
 
@@ -60,8 +60,8 @@ public class UserAccountService {
             throw new InvalidCredentialsException("이메일 또는 비밀번호가 올바르지 않습니다.");
         }
 
-        String accessToken = jwtProvider.generatedAccessToken(user.getId());
-        String refreshToken = jwtProvider.generatedRefreshToken(user.getId());
+        String accessToken = jwtProvider.generatedAccessToken(user.getId(),user.getEmail());
+        String refreshToken = jwtProvider.generatedRefreshToken(user.getId(),user.getEmail());
 
         String redisKey = "refreshToken:" + user.getId();
         redisTemplate.opsForValue().set(redisKey, refreshToken, jwtProperties.getRefreshTokenValidity());
@@ -71,6 +71,5 @@ public class UserAccountService {
         response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
 
         return new SigninResponse(user.getId(), accessToken);
-    }
-
+        }
 }

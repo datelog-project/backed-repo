@@ -9,6 +9,7 @@ import me.jinheum.datelog.exception.InvalidTokenException;
 import me.jinheum.datelog.exception.TokenExpiredException;
 import me.jinheum.datelog.service.TokenService;
 import me.jinheum.datelog.util.CookieUtil;
+import me.jinheum.datelog.util.ResponseUtil;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -33,18 +34,19 @@ public class SignoutFilter extends OncePerRequestFilter {
         @NonNull HttpServletResponse response,
         @NonNull FilterChain filterChain) throws ServletException, IOException {
         if (request.getRequestURI().equals("/auth/signout") && request.getMethod().equals("POST")) {
-            String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
-            if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                String token = authHeader.substring(7);
+            
+            String token = jwtProvider.resolveAccessToken(request);
+            if (token == null) {
+                ResponseUtil.writeUnauthorizedResponse(response, "토큰이 존재하지 않거나 형식이 올바르지 않습니다");
+                return;
+            }
 
-                try {
-                    jwtProvider.validateToken(token);  // AccessToken 검증
-                } catch (TokenExpiredException | InvalidTokenException e) {
-                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                    response.setContentType("application/json");
-                    response.getWriter().write("{\"error\": \"유효하지 않거나 만료된 토큰\"}");
-                    return;
-                }
+            try {
+                jwtProvider.validateToken(token);  // AccessToken 검증
+            } catch (TokenExpiredException | InvalidTokenException e) {
+                ResponseUtil.writeUnauthorizedResponse(response, "유효하지 않거나 만료된 토큰");
+                return;
+            }
 
                 UUID userId = jwtProvider.getUserId(token);
                 tokenService.deleteRefreshToken(userId); //토큰 추출하고 id에 맞는 리프레시 토큰 redis에서 삭제
@@ -53,15 +55,10 @@ public class SignoutFilter extends OncePerRequestFilter {
 
                 response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
                 response.setStatus(HttpServletResponse.SC_OK);
-                response.setContentType("application/json");
+                response.setContentType("application/json, charset=UTF-8");
+                response.setCharacterEncoding("UTF-8");
                 response.getWriter().write("{\"message\": \"로그아웃 완료\"}");
                 return;
-            } else {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.setContentType("application/json");
-                response.getWriter().write("{\"error\": \"유효하지 않은 토큰\"}");
-                return;
-            }
         }
 
         filterChain.doFilter(request, response);

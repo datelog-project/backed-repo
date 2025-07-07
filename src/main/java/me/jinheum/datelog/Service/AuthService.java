@@ -34,13 +34,14 @@ public class AuthService {
         jwtProvider.validateToken(refreshToken);
 
         UUID userId = jwtProvider.getUserId(refreshToken);
+        String email = jwtProvider.getEmail(refreshToken);
 
         if (!jwtProvider.isRefreshTokenValid(userId, refreshToken)) { // 리프레시토큰 검증
             throw new JwtException("저장된 refresh token과 일치하지 않음");
         }
 
-        String newAccessToken = jwtProvider.generatedAccessToken(userId);
-        String newRefreshToken = jwtProvider.generatedRefreshToken(userId);
+        String newAccessToken = jwtProvider.generatedAccessToken(userId,email);
+        String newRefreshToken = jwtProvider.generatedRefreshToken(userId,email);
         tokenService.saveRefreshToken(userId, newRefreshToken);
 
         ResponseCookie refreshCookie = cookieUtil.createRefreshTokenCookie(refreshToken, jwtProperties.getRefreshTokenValidity());
