@@ -22,14 +22,14 @@ public class UserConnectionService {
     private final UserAccountService userAccountService;
     private final ConnectionValidator connectionValidator;
 
-    public void invitePartner(UUID inviterId, String partnerEmail) {
-        UserAccount inviter = userAccountService.getUserById(inviterId);
+    public void invitePartner(UUID userId, String partnerEmail) {
+        UserAccount user = userAccountService.getUserById(userId);
         UserAccount partner = userAccountService.getUserByEmail(partnerEmail);
 
-        connectionValidator.validateInvite(inviter, partner);
+        connectionValidator.validateInvite(user, partner);
 
         UserConnection connection = UserConnection.builder()
-                .user(inviter)
+                .user(user)
                 .partner(partner)
                 .status(ConnectionStatus.PENDING)
                 .build();

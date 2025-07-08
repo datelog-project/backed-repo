@@ -30,33 +30,33 @@ public class UserConnectionController {
                                     @AuthenticationPrincipal UserAccount user) {
         connectionService.invitePartner(user.getId(), request.partnerEmail());
         return ResponseEntity.ok(new ApiResponse("초대를 보냈습니다."));
-    }
+    } //ok
 
     @PostMapping("/{connectionId}/accept")
     public ResponseEntity<ApiResponse> acceptInvite(@PathVariable UUID connectionId,
                                         @AuthenticationPrincipal UserAccount user) {
         connectionService.acceptInvite(connectionId, user.getId());
         return ResponseEntity.ok(new ApiResponse("초대를 수락했습니다."));
-    }
+    } //ok
 
     @PostMapping("/{connectionId}/reject")
     public ResponseEntity<ApiResponse> rejectInvite(@PathVariable UUID connectionId,
                                         @AuthenticationPrincipal UserAccount user) {
         connectionService.rejectInvite(connectionId, user.getId());
         return ResponseEntity.ok(new ApiResponse("초대를 거절했습니다."));
-    }
+    } //ok
 
     @PostMapping("/{connectionId}/end")
     public ResponseEntity<ApiResponse> endConnection(@PathVariable UUID connectionId,
                                            @AuthenticationPrincipal UserAccount user) {
         connectionService.endConnection(connectionId, user.getId());
         return ResponseEntity.ok(new ApiResponse("연결이 종료되었습니다."));
-    }
+    } //ok
 
     @PostMapping("/reconnect")
     public ResponseEntity<ApiResponse> reconnect(@RequestBody ReconnectRequest request,
                                        @AuthenticationPrincipal UserAccount user) {
         connectionService.reconnectByEmail(user.getId(), request.partnerEmail());
         return ResponseEntity.ok(new ApiResponse("재결합 되었습니다."));
-    }
+    } //ok
 }

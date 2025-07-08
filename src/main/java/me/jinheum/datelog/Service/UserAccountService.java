@@ -25,7 +25,7 @@ public class UserAccountService {
     public SignupResponse signup(SignupRequest request) {
         if (userAccountRepository.findByEmail(request.email()).isPresent()) {
             throw new EmailAlreadyExistsException("이미 존재하는 이메일입니다.");
-        }
+        } //ok
 
         String hashedPassword = passwordEncoder.encode(request.password());
 
@@ -42,10 +42,10 @@ public class UserAccountService {
     public UserAccount getUserById(UUID id) {
         return userAccountRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
-    }
+    } //ok
 
     public UserAccount getUserByEmail(String email) {
         return userAccountRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("해당 이메일의 유저가 존재하지 않습니다."));
-    }
+    } //ok
 }
