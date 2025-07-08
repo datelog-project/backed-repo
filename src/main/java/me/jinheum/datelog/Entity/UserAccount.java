@@ -1,7 +1,8 @@
-package me.jinheum.datelog.Entity;
+package me.jinheum.datelog.entity;
 
 import java.util.UUID;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -23,11 +24,8 @@ public class UserAccount {
     private UUID id;
 
     private String name;
-    
-    private String tag;
-    
-    private String username;
 
+    @Column(unique = true)
     private String email;
 
     private String password;

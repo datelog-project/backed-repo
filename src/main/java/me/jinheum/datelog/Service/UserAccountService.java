@@ -1,52 +1,75 @@
-package me.jinheum.datelog.Service;
+package me.jinheum.datelog.service;
 
-import java.util.Random;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import me.jinheum.datelog.DTO.SignupRequest;
-import me.jinheum.datelog.DTO.SignupResponse;
-import me.jinheum.datelog.Entity.UserAccount;
-import me.jinheum.datelog.Repository.UserAccountRepository;
+import me.jinheum.datelog.config.JwtProperties;
+import me.jinheum.datelog.dto.SigninRequest;
+import me.jinheum.datelog.dto.SigninResponse;
+import me.jinheum.datelog.dto.SignupRequest;
+import me.jinheum.datelog.dto.SignupResponse;
+import me.jinheum.datelog.entity.UserAccount;
+import me.jinheum.datelog.exception.EmailAlreadyExistsException;
+import me.jinheum.datelog.exception.InvalidCredentialsException;
+import me.jinheum.datelog.repository.UserAccountRepository;
+import me.jinheum.datelog.security.JwtProvider;
+import me.jinheum.datelog.util.CookieUtil;
+
+
+import org.springframework.data.redis.core.StringRedisTemplate;
 
 @Service
 @RequiredArgsConstructor
 public class UserAccountService {
+    
     private final UserAccountRepository userAccountRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtProvider jwtProvider;
+    private final JwtProperties jwtProperties;
+    private final StringRedisTemplate redisTemplate;
+    private final CookieUtil cookieUtil;
 
     public SignupResponse signup(SignupRequest request) {
-        String tag = generatedUniqueTagForName(request.name());
-        String username = request.name() + "#" + tag;
+        if (userAccountRepository.findByEmail(request.email()).isPresent()) {
+            throw new EmailAlreadyExistsException("이미 존재하는 이메일입니다.");
+        }
 
         String hashedPassword = passwordEncoder.encode(request.password());
 
         UserAccount user = UserAccount.builder()
                 .name(request.name())
-                .tag(tag)
-                .username(username)
                 .email(request.email())
                 .password(hashedPassword)
                 .build();
 
         UserAccount saved = userAccountRepository.save(user);
-        return new SignupResponse(saved.getId(), saved.getUsername());
+        return new SignupResponse(saved.getId());
     }
 
 
-    public String generatedUniqueTagForName(String name) {
-        Random random = new Random();
-        String tag;
-        int maxAttempts = 1000;
+    public SigninResponse signin(SigninRequest request, HttpServletResponse response) {
+        UserAccount user = userAccountRepository.findByEmail(request.email())
+                .orElseThrow(() -> new InvalidCredentialsException("이메일 또는 비밀번호가 올바르지 않습니다."));
 
-        for (int i = 0; i < maxAttempts; i++) {
-            int randNum = random.nextInt(9000) + 1000;
-            tag = String.valueOf(randNum);
-            boolean exists = userAccountRepository.findByNameAndTag(name, tag).isPresent();
-            if (!exists) return tag;
+        if (!passwordEncoder.matches(request.password(), user.getPassword())) {
+            throw new InvalidCredentialsException("이메일 또는 비밀번호가 올바르지 않습니다.");
         }
-        throw new RuntimeException("중복으로 인해 유효한 tag 생성 실패");
-    }
+
+        String accessToken = jwtProvider.generatedAccessToken(user.getId(),user.getEmail());
+        String refreshToken = jwtProvider.generatedRefreshToken(user.getId(),user.getEmail());
+
+        String redisKey = "refreshToken:" + user.getId();
+        redisTemplate.opsForValue().set(redisKey, refreshToken, jwtProperties.getRefreshTokenValidity());
+
+        ResponseCookie refreshCookie = cookieUtil.createRefreshTokenCookie(refreshToken, jwtProperties.getRefreshTokenValidity());
+
+        response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
+
+        return new SigninResponse(user.getId(), accessToken);
+        }
 }

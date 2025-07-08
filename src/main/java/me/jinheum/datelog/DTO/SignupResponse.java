@@ -1,8 +1,7 @@
-package me.jinheum.datelog.DTO;
+package me.jinheum.datelog.dto;
 
 import java.util.UUID;
 
 public record SignupResponse(
-    UUID id,
-    String username
+    UUID id
 ) {}

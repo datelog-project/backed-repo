@@ -3,7 +3,10 @@ package me.jinheum.datelog;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
 
+import java.time.Duration;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -13,13 +16,19 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import me.jinheum.datelog.DTO.SignupRequest;
-import me.jinheum.datelog.DTO.SignupResponse;
-import me.jinheum.datelog.Entity.UserAccount;
-import me.jinheum.datelog.Repository.UserAccountRepository;
-import me.jinheum.datelog.Service.UserAccountService;
+import me.jinheum.datelog.dto.SigninRequest;
+import me.jinheum.datelog.dto.SigninResponse;
+import me.jinheum.datelog.dto.SignupRequest;
+import me.jinheum.datelog.dto.SignupResponse;
+import me.jinheum.datelog.entity.UserAccount;
+import me.jinheum.datelog.repository.UserAccountRepository;
+import me.jinheum.datelog.security.JwtProvider;
+import me.jinheum.datelog.service.UserAccountService;
 
 @ExtendWith(MockitoExtension.class)
 class UserAccountServiceTest {
@@ -30,39 +39,79 @@ class UserAccountServiceTest {
     @Mock
     private PasswordEncoder passwordEncoder;
 
+    @Mock
+    private JwtProvider jwtProvider;
+
     @InjectMocks
     private UserAccountService userAccountService;
 
+    @Mock
+    private StringRedisTemplate redisTemplate;
+
+    @Mock
+    private ValueOperations<String, String> valueOperations;
+
     @Test
     void 회원가입_성공() {
-        // given
+
         SignupRequest request = new SignupRequest("진흠", "jinhum@test.com", "1234");
 
-        // 비밀번호 암호화
-        String hashedPassword = "$2a$10$abc123";  // mock된 해시값
+        String hashedPassword = "$2a$10$abc123";
         Mockito.when(passwordEncoder.encode("1234")).thenReturn(hashedPassword);
 
-        // 중복 없는 tag 생성
-        Mockito.when(userAccountRepository.findByNameAndTag(eq("진흠"), anyString()))
-                .thenReturn(Optional.empty());
 
-        // 저장될 User 객체 (mock)
         UserAccount savedUser = UserAccount.builder()
                 .id(UUID.randomUUID())
                 .name("진흠")
-                .tag("1234")
-                .username("진흠#1234")
                 .email("jinhum@test.com")
                 .password(hashedPassword)
                 .build();
 
         Mockito.when(userAccountRepository.save(any())).thenReturn(savedUser);
 
-        // when
         SignupResponse response = userAccountService.signup(request);
 
-        // then
+
         assertNotNull(response.id());
-        assertEquals("진흠#1234", response.username());
     }
+
+    @Test
+    void 로그인_성공() {
+        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+        doNothing().when(valueOperations).set(anyString(), anyString(), any(Duration.class));
+    
+        String rawPassword = "1234";
+        String encodedPassword = "$2a$10$fakeHashHereFakeHashHere123456";
+        String email = "jinheum@test.com";
+
+        UserAccount user = UserAccount.builder()
+                .id(UUID.randomUUID())
+                .name("진흠")
+                .email(email)
+                .password(encodedPassword)
+                .build();
+
+        Mockito.when(userAccountRepository.findByEmail(email))
+                .thenReturn(Optional.of(user));
+
+        Mockito.when(passwordEncoder.matches(rawPassword, encodedPassword))
+                .thenReturn(true);
+
+        Mockito.when(jwtProvider.generatedAccessToken(Mockito.any()))
+                .thenReturn("mockAccessToken");
+
+        Mockito.when(jwtProvider.generatedRefreshToken(Mockito.any()))
+                .thenReturn("mockRefreshToken");
+
+
+        SigninRequest request = new SigninRequest(email, rawPassword);
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        SigninResponse result = userAccountService.signin(request, response);
+
+        assertNotNull(result);
+        assertEquals(user.getId(), result.id());
+        assertEquals("mockAccessToken", result.accessToken());
+    }
+    
 }

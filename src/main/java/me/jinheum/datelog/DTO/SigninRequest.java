@@ -1,8 +1,6 @@
 package me.jinheum.datelog.dto;
 
-public record SignupRequest(
-    String name,
+public record SigninRequest(
     String email,
     String password
-
 ) {}
