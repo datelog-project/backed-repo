@@ -1,5 +1,6 @@
 package me.jinheum.datelog.repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -11,7 +12,7 @@ import me.jinheum.datelog.entity.UserAccount;
 import me.jinheum.datelog.entity.UserConnection;
 public interface UserConnectionRepository extends JpaRepository<UserConnection , UUID> {
 
-    boolean existsByUserOrPartner(UserAccount user, UserAccount partner);
+    List<UserConnection> findAllByUserOrPartner(UserAccount user1, UserAccount partner);
     
     @Query("SELECT uc FROM UserConnection uc WHERE " +
         "(uc.user = :user1 AND uc.partner = :user2) OR " +
