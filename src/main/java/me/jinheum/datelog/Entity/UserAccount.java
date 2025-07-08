@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Builder
 @Getter
-@Table
+@Table(name = "user_accounts")
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserAccount {
