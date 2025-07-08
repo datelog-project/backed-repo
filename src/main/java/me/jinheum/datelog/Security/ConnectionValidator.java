@@ -16,7 +16,7 @@ public class ConnectionValidator {
 
     private final UserConnectionRepository userConnectionRepository;
 
-    public void validateInvite(UserAccount user, UserAccount partner) {
+    public void validateInvite(UserAccount user, UserAccount partner) { //초대할 때 검증
         if (user.getId().equals(partner.getId())) {
             throw new IllegalArgumentException("본인에게 초대할 수 없습니다.");
         } //ok
@@ -30,23 +30,23 @@ public class ConnectionValidator {
         } //ok
     }
 
-    public boolean hasPendingInviteFrom(UserAccount user, UserAccount partner) {
+    public boolean hasPendingInviteFrom(UserAccount user, UserAccount partner) { //초대 보냈는지 확인 
         return userConnectionRepository.findByUserAndPartner(user, partner)
                 .filter(conn -> conn.getStatus() == ConnectionStatus.PENDING)
                 .isPresent();
     }
 
-    public boolean hasAnyActiveConnection(UserAccount user) {
+    public boolean hasAnyActiveConnection(UserAccount user) { //유저가 연결되어 있는지, 아니면 초대 대기중에 있는지 확인
         return userConnectionRepository.findAllByUserOrPartner(user, user).stream()
                 .anyMatch(conn -> conn.getStatus() == ConnectionStatus.CONNECTED || conn.getStatus() == ConnectionStatus.PENDING);
     }
 
-    private UserConnection getConnectionOrThrow(UUID connectionId) {
+    private UserConnection getConnectionOrThrow(UUID connectionId) { //연결 조회하기 없으면 예외
         return userConnectionRepository.findById(connectionId)
             .orElseThrow(() -> new IllegalArgumentException("초대가 존재하지 않습니다."));
     } //ok
 
-    public UserConnection validatePartnerInvitation(UUID connectionId, UUID currentUserId) {
+    public UserConnection validatePartnerInvitation(UUID connectionId, UUID currentUserId) { //현재 사용자(partner임 왜냐하면 초대 받은 사람이 partner쪽이니까)가 수락 거절할 권한 있는지
         UserConnection connection =getConnectionOrThrow(connectionId);
 
         if (!connection.getUser().getId().equals(currentUserId) &&
@@ -61,7 +61,7 @@ public class ConnectionValidator {
         return connection;
     }
 
-    public UserConnection validateOwnedConnection(UUID connectionId, UUID currentUserId) {
+    public UserConnection validateOwnedConnection(UUID connectionId, UUID currentUserId) { //현재 사용자가 연결을 ENDED할 권한 있는지
         UserConnection connection = getConnectionOrThrow(connectionId);
 
         if (!connection.getPartner().getId().equals(currentUserId) && !connection.getUser().getId().equals(currentUserId)) {
@@ -71,10 +71,10 @@ public class ConnectionValidator {
         return connection;
     }
 
-    public UserConnection getEndedConnectionBetween(UserAccount connectionUser, UserAccount currentUser) {
+    public UserConnection getEndedConnectionBetween(UserAccount connectionUser, UserAccount currentUser) { // 두 사용자 사이에 ENDED 된 걸 찾아 재결합 할 수 있는지(만약 헤어지고 다른사람과 연결했다면 재결합 불가)
         UserConnection connection = userConnectionRepository
             .findByUserAndPartner(connectionUser, currentUser)
-            .or(() -> userConnectionRepository.findByUserAndPartner(connectionUser, currentUser))
+            .or(() -> userConnectionRepository.findByUserAndPartner(currentUser, connectionUser))
             .orElseThrow(() -> new IllegalArgumentException("연결이 존재하지 않습니다."));
 
         if (!connection.getUser().getId().equals(currentUser.getId()) && !connection.getPartner().getId().equals(currentUser.getId())) {
