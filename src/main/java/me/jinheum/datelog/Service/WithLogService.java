@@ -9,7 +9,7 @@ import lombok.RequiredArgsConstructor;
 import me.jinheum.datelog.dto.WithLogRequest;
 import me.jinheum.datelog.entity.UserConnection;
 import me.jinheum.datelog.entity.WithLog;
-import me.jinheum.datelog.exception.InvalidTokenException;
+import me.jinheum.datelog.exception.AccessDeniedException;
 import me.jinheum.datelog.repository.UserConnectionRepository;
 import me.jinheum.datelog.repository.WithLogRepository;
 
@@ -25,13 +25,9 @@ public class WithLogService {
         UserConnection Connection = userConnectionRepository.findById(ConnectionId)
             .orElseThrow(() -> new IllegalArgumentException("해당 연결이 존재하지 않습니다."));
 
-        UUID connectionUserId = user;
-
-        boolean isAuthorized = Connection.getUser().getId().equals(connectionUserId)
-            || Connection.getPartner().getId().equals(connectionUserId);
-
-        if (!isAuthorized) {
-            throw new InvalidTokenException("접근 권한이 없습니다.");
+        if (!Connection.getUser().getId().equals(user) &&
+            !Connection.getPartner().getId().equals(user)) {
+            throw new AccessDeniedException("접근 권한이 없습니다.");
         }
         WithLog withLog = WithLog.builder()
             .userConnection(Connection)
