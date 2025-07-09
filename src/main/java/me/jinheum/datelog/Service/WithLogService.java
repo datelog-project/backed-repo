@@ -39,4 +39,19 @@ public class WithLogService {
 
         withLogRepository.save(withLog);
     }
+
+    @Transactional
+    public void deleteWithLog(UUID withLogId, UUID user) {
+        WithLog withLog = withLogRepository.findById(withLogId)
+            .orElseThrow(() -> new IllegalArgumentException("해당 로그가 존재하지 않습니다."));
+
+        UserConnection connection = withLog.getUserConnection();
+
+        if (!connection.getUser().getId().equals(user) &&
+            !connection.getPartner().getId().equals(user)) {
+            throw new AccessDeniedException("접근 권한이 없습니다.");
+        }
+
+        withLogRepository.delete(withLog);
+    }
 }

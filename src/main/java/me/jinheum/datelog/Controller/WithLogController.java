@@ -37,4 +37,14 @@ public class WithLogController {
         withLogService.createWithLog(ConnectionId, request, user.getId());
         return ResponseEntity.ok(new ApiResponse("게시글이 등록되었습니다."));
     }
+
+    @PostMapping("/{withLogId}/delete")
+    public ResponseEntity<ApiResponse> deleteWithLog(
+            @PathVariable UUID withLogId,
+            @AuthenticationPrincipal UserAccount user) {
+
+        withLogService.deleteWithLog(withLogId, user.getId());
+
+        return ResponseEntity.ok(new ApiResponse("게시글이 삭제되었습니다."));
+    }
 }
