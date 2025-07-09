@@ -22,10 +22,7 @@ public class UserConnectionService {
     private final UserAccountService userAccountService;
     private final ConnectionValidator connectionValidator;
 
-    public void invitePartner(UUID userId, String partnerEmail) {
-        UserAccount user = userAccountService.getUserById(userId);
-        UserAccount partner = userAccountService.getUserByEmail(partnerEmail);
-
+    public void invitePartner(UserAccount user, UserAccount partner) {
         connectionValidator.validateInvite(user, partner);
 
         UserConnection connection = UserConnection.builder()

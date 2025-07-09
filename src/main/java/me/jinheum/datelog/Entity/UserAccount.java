@@ -1,5 +1,6 @@
 package me.jinheum.datelog.entity;
 
+import java.util.List;
 import java.util.UUID;
 
 import jakarta.persistence.Column;
@@ -7,7 +8,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -32,9 +33,9 @@ public class UserAccount {
 
     private String password;
 
-    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
-    private UserConnection userconnection;
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private List<UserConnection> userconnection;
 
-    @OneToOne(mappedBy = "partner", fetch = FetchType.LAZY)
-    private UserConnection partnerConnection;
+    @OneToMany(mappedBy = "partner", fetch = FetchType.LAZY)
+    private List<UserConnection> partnerConnection;
 }

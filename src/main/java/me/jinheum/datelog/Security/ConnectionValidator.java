@@ -1,5 +1,6 @@
 package me.jinheum.datelog.security;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.stereotype.Component;
@@ -21,12 +22,12 @@ public class ConnectionValidator {
             throw new IllegalArgumentException("본인에게 초대할 수 없습니다.");
         } //ok
 
-        if (hasPendingInviteFrom(partner, user)) {
+        if (hasPendingInviteFrom(user, partner)) {
             throw new IllegalStateException("상대방이 이미 나를 초대했습니다. 받은 초대를 수락해주세요.");
         } //ok
 
-        if (hasAnyActiveConnection(user) || hasAnyActiveConnection(partner)) {
-            throw new IllegalStateException("이미 연결된 유저가 있습니다.");
+        if (hasAnyActiveConnection(user, partner)) {
+            throw new IllegalStateException("이미 초대를 보냈거나, 이미 연결된 유저가 있습니다.");
         } //ok
     }
 
@@ -36,9 +37,8 @@ public class ConnectionValidator {
                 .isPresent();
     }
 
-    public boolean hasAnyActiveConnection(UserAccount user) { //유저가 연결되어 있는지, 아니면 초대 대기중에 있는지 확인
-        return userConnectionRepository.findAllByUserOrPartner(user, user).stream()
-                .anyMatch(conn -> conn.getStatus() == ConnectionStatus.CONNECTED || conn.getStatus() == ConnectionStatus.PENDING);
+    public boolean hasAnyActiveConnection(UserAccount user, UserAccount partner) {
+        return userConnectionRepository.existsPendingConnectionForUsers(List.of(user, partner));
     }
 
     private UserConnection getConnectionOrThrow(UUID connectionId) { //연결 조회하기 없으면 예외
@@ -81,7 +81,7 @@ public class ConnectionValidator {
             throw new IllegalArgumentException("재결합은 연결 당사자만 요청할 수 있습니다.");
         } //ok
 
-        if (hasAnyActiveConnection(connectionUser) || hasAnyActiveConnection(currentUser)) {
+        if (hasAnyActiveConnection(connectionUser, connectionUser)) {
             throw new IllegalStateException("이미 연결된 유저가 있어 재결합할 수 없습니다.");
         } //ok
 

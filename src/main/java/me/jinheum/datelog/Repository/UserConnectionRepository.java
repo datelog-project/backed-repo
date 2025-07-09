@@ -11,9 +11,13 @@ import io.lettuce.core.dynamic.annotation.Param;
 import me.jinheum.datelog.entity.UserAccount;
 import me.jinheum.datelog.entity.UserConnection;
 public interface UserConnectionRepository extends JpaRepository<UserConnection , UUID> {
-
-    List<UserConnection> findAllByUserOrPartner(UserAccount user1, UserAccount partner);
     
+
+    @Query("SELECT COUNT(uc) > 0 FROM UserConnection uc WHERE (uc.user IN :users OR uc.partner IN :users) AND uc.status = 'PENDING'")
+    boolean existsPendingConnectionForUsers(@Param("users") List<UserAccount> users); //이미 초대 보냈는지 한번에 가져와서 쿼리 줄임
+
+
+
     @Query("SELECT uc FROM UserConnection uc WHERE " +
         "(uc.user = :user1 AND uc.partner = :user2) OR " +
         "(uc.user = :user2 AND uc.partner = :user1)")

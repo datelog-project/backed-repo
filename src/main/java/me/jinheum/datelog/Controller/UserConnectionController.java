@@ -2,7 +2,6 @@ package me.jinheum.datelog.controller;
 
 
 import java.util.UUID;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,6 +15,7 @@ import me.jinheum.datelog.dto.ApiResponse;
 import me.jinheum.datelog.dto.InviteRequest;
 import me.jinheum.datelog.dto.ReconnectRequest;
 import me.jinheum.datelog.entity.UserAccount;
+import me.jinheum.datelog.service.UserAccountService;
 import me.jinheum.datelog.service.UserConnectionService;
 
 @RestController
@@ -24,13 +24,15 @@ import me.jinheum.datelog.service.UserConnectionService;
 public class UserConnectionController {
 
     private final UserConnectionService connectionService;
+    private final UserAccountService userAccountService;
 
     @PostMapping("/invite")
     public ResponseEntity<ApiResponse> invite(@RequestBody InviteRequest request,
-                                    @AuthenticationPrincipal UserAccount user) {
-        connectionService.invitePartner(user.getId(), request.partnerEmail());
+                                            @AuthenticationPrincipal UserAccount user) {
+        UserAccount partner = userAccountService.getUserByEmail(request.partnerEmail());
+        connectionService.invitePartner(user, partner);
         return ResponseEntity.ok(new ApiResponse("초대를 보냈습니다."));
-    } //ok
+    }
 
     @PostMapping("/{connectionId}/accept")
     public ResponseEntity<ApiResponse> acceptInvite(@PathVariable UUID connectionId,
