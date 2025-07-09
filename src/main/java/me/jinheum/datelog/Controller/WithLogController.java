@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -38,7 +39,7 @@ public class WithLogController {
         return ResponseEntity.ok(new ApiResponse("게시글이 등록되었습니다."));
     }
 
-    @PostMapping("/{withLogId}/delete")
+    @DeleteMapping("/with-logs/{withLogId}")
     public ResponseEntity<ApiResponse> deleteWithLog(
             @PathVariable UUID withLogId,
             @AuthenticationPrincipal UserAccount user) {
