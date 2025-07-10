@@ -60,6 +60,6 @@ public class UserConnectionController {
     public ResponseEntity<InviteResponse> reconnect(@RequestBody ReconnectRequest request,
                                        @AuthenticationPrincipal UserAccount user) {
         UUID connectionId = connectionService.reconnectByEmail(user.getId(), request.partnerEmail());
-        return ResponseEntity.ok(new InviteResponse("재결합 되었습니다.", connectionId));
+        return ResponseEntity.ok(new InviteResponse("재결합 요청을 보냈습니다.", connectionId));
     } //ok
 }

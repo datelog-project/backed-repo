@@ -60,7 +60,9 @@ public class UserConnectionService {
 
         UserConnection connection = connectionValidator.getEndedConnectionBetween(user, partner);
 
-        connection.setStatus(ConnectionStatus.CONNECTED);
+        connection.setUser(user);
+        connection.setPartner(partner);
+        connection.setStatus(ConnectionStatus.PENDING);
         connection.setStartedAt(LocalDateTime.now());
         userConnectionRepository.save(connection);
         
