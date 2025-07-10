@@ -54,9 +54,8 @@ public class ConnectionValidator {
     public UserConnection validatePartnerInvitation(UUID connectionId, UUID currentUserId) { //현재 사용자(partner임 왜냐하면 초대 받은 사람이 partner쪽이니까)가 수락 거절할 권한 있는지
         UserConnection connection =getConnectionOrThrow(connectionId);
 
-        if (!connection.getUser().getId().equals(currentUserId) &&
-            !connection.getPartner().getId().equals(currentUserId)) {
-            throw new IllegalStateException("본인의 초대만 수락/거절할 수 있습니다.");
+        if (!connection.getPartner().getId().equals(currentUserId)) {
+            throw new IllegalStateException("초대를 받은 사람만 수락/거절할 수 있습니다.");
         } //ok
 
         if (connection.getStatus() != ConnectionStatus.PENDING) {

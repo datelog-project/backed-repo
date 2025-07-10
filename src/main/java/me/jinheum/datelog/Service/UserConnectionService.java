@@ -54,14 +54,18 @@ public class UserConnectionService {
         userConnectionRepository.save(connection);
     }
 
-    public void reconnectByEmail(UUID userId, String partnerEmail) {
+    public UUID reconnectByEmail(UUID userId, String partnerEmail) {
         UserAccount user = userAccountService.getUserById(userId);
         UserAccount partner = userAccountService.getUserByEmail(partnerEmail);
 
         UserConnection connection = connectionValidator.getEndedConnectionBetween(user, partner);
 
-        connection.setStatus(ConnectionStatus.CONNECTED);
+        connection.setUser(user);
+        connection.setPartner(partner);
+        connection.setStatus(ConnectionStatus.PENDING);
         connection.setStartedAt(LocalDateTime.now());
         userConnectionRepository.save(connection);
+        
+        return connection.getId();
     }
 }

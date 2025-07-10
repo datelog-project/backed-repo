@@ -57,9 +57,9 @@ public class UserConnectionController {
     } //ok
 
     @PostMapping("/reconnect")
-    public ResponseEntity<ApiResponse> reconnect(@RequestBody ReconnectRequest request,
+    public ResponseEntity<InviteResponse> reconnect(@RequestBody ReconnectRequest request,
                                        @AuthenticationPrincipal UserAccount user) {
-        connectionService.reconnectByEmail(user.getId(), request.partnerEmail());
-        return ResponseEntity.ok(new ApiResponse("재결합 되었습니다."));
+        UUID connectionId = connectionService.reconnectByEmail(user.getId(), request.partnerEmail());
+        return ResponseEntity.ok(new InviteResponse("재결합 요청을 보냈습니다.", connectionId));
     } //ok
 }
