@@ -10,11 +10,12 @@ import org.springframework.data.jpa.repository.Query;
 import io.lettuce.core.dynamic.annotation.Param;
 import me.jinheum.datelog.entity.UserAccount;
 import me.jinheum.datelog.entity.UserConnection;
+import me.jinheum.datelog.entity.enums.ConnectionStatus;
 public interface UserConnectionRepository extends JpaRepository<UserConnection , UUID> {
     
 
-    @Query("SELECT COUNT(uc) > 0 FROM UserConnection uc WHERE (uc.user IN :users OR uc.partner IN :users) AND uc.status = 'PENDING'")
-    boolean existsPendingConnectionForUsers(@Param("users") List<UserAccount> users); //이미 초대 보냈는지 한번에 가져와서 쿼리 줄임
+    @Query("SELECT COUNT(uc) > 0 FROM UserConnection uc WHERE (uc.user IN :users OR uc.partner IN :users) AND uc.status IN :statuses ")
+    boolean existsPendingConnectionForUsers(@Param("users") List<UserAccount> users, @Param("statuses") List<ConnectionStatus> statuses); //이미 초대 보냈는지 한번에 가져와서 쿼리 줄임
 
 
 

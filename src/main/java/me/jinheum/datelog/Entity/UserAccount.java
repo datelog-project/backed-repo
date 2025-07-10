@@ -26,6 +26,7 @@ public class UserAccount {
     @GeneratedValue
     private UUID id;
 
+    @Column(nullable = false)
     private String name;
 
     @Column(unique = true)
