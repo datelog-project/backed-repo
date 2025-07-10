@@ -48,7 +48,7 @@ public class ConnectionValidator {
 
     private UserConnection getConnectionOrThrow(UUID connectionId) { //연결 조회하기 없으면 예외
         return userConnectionRepository.findById(connectionId)
-            .orElseThrow(() -> new IllegalArgumentException("초대가 존재하지 않습니다."));
+            .orElseThrow(() -> new IllegalArgumentException("연결이 존재하지 않습니다."));
     } //ok
 
     public UserConnection validatePartnerInvitation(UUID connectionId, UUID currentUserId) { //현재 사용자(partner임 왜냐하면 초대 받은 사람이 partner쪽이니까)가 수락 거절할 권한 있는지
@@ -66,7 +66,7 @@ public class ConnectionValidator {
         return connection;
     }
 
-    public UserConnection validateOwnedConnection(UUID connectionId, UUID currentUserId) { //현재 사용자가 연결을 ENDED할 권한 있는지
+    public UserConnection validateCanEndConnection(UUID connectionId, UUID currentUserId) { //현재 사용자가 연결을 ENDED할 권한 있는지
         UserConnection connection = getConnectionOrThrow(connectionId);
 
         if (!connection.getPartner().getId().equals(currentUserId) && !connection.getUser().getId().equals(currentUserId)) {

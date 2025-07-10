@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import lombok.RequiredArgsConstructor;
 import me.jinheum.datelog.dto.ApiResponse;
 import me.jinheum.datelog.dto.InviteRequest;
+import me.jinheum.datelog.dto.InviteResponse;
 import me.jinheum.datelog.dto.ReconnectRequest;
 import me.jinheum.datelog.entity.UserAccount;
 import me.jinheum.datelog.service.UserAccountService;
@@ -27,11 +28,11 @@ public class UserConnectionController {
     private final UserAccountService userAccountService;
 
     @PostMapping("/invite")
-    public ResponseEntity<ApiResponse> invite(@RequestBody InviteRequest request,
+    public ResponseEntity<InviteResponse> invite(@RequestBody InviteRequest request,
                                             @AuthenticationPrincipal UserAccount user) {
         UserAccount partner = userAccountService.getUserByEmail(request.partnerEmail());
-        connectionService.invitePartner(user, partner);
-        return ResponseEntity.ok(new ApiResponse("초대를 보냈습니다."));
+        UUID connectionId = connectionService.invitePartner(user, partner);
+        return ResponseEntity.ok(new InviteResponse("초대를 보냈습니다.", connectionId));
     }
 
     @PostMapping("/{connectionId}/accept")

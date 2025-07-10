@@ -22,7 +22,7 @@ public class UserConnectionService {
     private final UserAccountService userAccountService;
     private final ConnectionValidator connectionValidator;
 
-    public void invitePartner(UserAccount user, UserAccount partner) {
+    public UUID invitePartner(UserAccount user, UserAccount partner) {
         connectionValidator.validateInvite(user, partner);
 
         UserConnection connection = UserConnection.builder()
@@ -32,6 +32,7 @@ public class UserConnectionService {
                 .build();
 
         userConnectionRepository.save(connection);
+        return connection.getId();
     }
 
     public void acceptInvite(UUID connectionId, UUID currentUserId) {
@@ -47,7 +48,7 @@ public class UserConnectionService {
     }
 
     public void endConnection(UUID connectionId, UUID currentUserId) {
-        UserConnection connection = connectionValidator.validateOwnedConnection(connectionId, currentUserId);
+        UserConnection connection = connectionValidator.validateCanEndConnection(connectionId, currentUserId);
         connection.setStatus(ConnectionStatus.ENDED);
         connection.setStartedAt(null);
         userConnectionRepository.save(connection);
