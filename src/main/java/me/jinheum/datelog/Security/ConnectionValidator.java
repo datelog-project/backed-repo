@@ -33,12 +33,17 @@ public class ConnectionValidator {
 
     public boolean hasPendingInviteFrom(UserAccount user, UserAccount partner) { //초대 보냈는지 확인 
         return userConnectionRepository.findByUserAndPartner(user, partner)
-                .filter(conn -> conn.getStatus() == ConnectionStatus.PENDING)
+                .filter(conn -> 
+                        conn.getStatus() == ConnectionStatus.PENDING &&
+                        conn.getUser().getId().equals(partner.getId())
+                        )
                 .isPresent();
     }
 
     public boolean hasAnyActiveConnection(UserAccount user, UserAccount partner) {
-        return userConnectionRepository.existsPendingConnectionForUsers(List.of(user, partner));
+        return userConnectionRepository.existsPendingConnectionForUsers(
+            List.of(user, partner),
+            List.of(ConnectionStatus.PENDING, ConnectionStatus.CONNECTED));
     }
 
     private UserConnection getConnectionOrThrow(UUID connectionId) { //연결 조회하기 없으면 예외

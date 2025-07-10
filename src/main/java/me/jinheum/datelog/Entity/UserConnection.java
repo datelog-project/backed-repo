@@ -42,11 +42,11 @@ public class UserConnection {
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false, unique = true)
+    @JoinColumn(name = "user_id", nullable = false)
     private UserAccount user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "partner_id", nullable = false, unique = true)
+    @JoinColumn(name = "partner_id", nullable = false)
     private UserAccount partner;
 
     @Enumerated(EnumType.STRING)
