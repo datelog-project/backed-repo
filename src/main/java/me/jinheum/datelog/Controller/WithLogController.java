@@ -17,6 +17,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.jinheum.datelog.dto.ApiResponse;
+import me.jinheum.datelog.dto.WithLogPreviewResponse;
 import me.jinheum.datelog.dto.WithLogRequest;
 import me.jinheum.datelog.dto.WithLogResponse;
 import me.jinheum.datelog.entity.UserAccount;
@@ -53,11 +54,20 @@ public class WithLogController {
     }
 
     @GetMapping("{connectionId}/with-logs")
-    public ResponseEntity<List<WithLogResponse>> getWithLogs(
+    public ResponseEntity<List<WithLogPreviewResponse>> getWithLogs(
             @PathVariable UUID connectionId,
             @AuthenticationPrincipal UserAccount user
     ) {
-        List<WithLogResponse> logs = withLogService.getWithLogs(connectionId, user.getId());
-        return ResponseEntity.ok(logs);
+        List<WithLogPreviewResponse> previews = withLogService.getWithLogPreviews(connectionId, user.getId());
+        return ResponseEntity.ok(previews);
+    }
+
+    @GetMapping("with-logs/{withLogId}")
+    public ResponseEntity<WithLogResponse> getWithLogDetail(
+            @PathVariable UUID withLogId,
+            @AuthenticationPrincipal UserAccount user) {
+        
+        WithLogResponse response = withLogService.getWithLogDetail(withLogId, user.getId());
+        return ResponseEntity.ok(response);
     }
 }

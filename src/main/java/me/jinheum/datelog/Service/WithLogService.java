@@ -7,11 +7,14 @@ import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
+import me.jinheum.datelog.dto.WithLogPreviewResponse;
 import me.jinheum.datelog.dto.WithLogRequest;
 import me.jinheum.datelog.dto.WithLogResponse;
+import me.jinheum.datelog.entity.Media;
 import me.jinheum.datelog.entity.UserConnection;
 import me.jinheum.datelog.entity.WithLog;
 import me.jinheum.datelog.exception.AccessDeniedException;
+import me.jinheum.datelog.repository.MediaRepository;
 import me.jinheum.datelog.repository.UserConnectionRepository;
 import me.jinheum.datelog.repository.WithLogRepository;
 
@@ -21,6 +24,7 @@ public class WithLogService {
 
     private final WithLogRepository withLogRepository;
     private final UserConnectionRepository userConnectionRepository;
+    private final MediaRepository mediaRepository;
 
     @Transactional
     public void createWithLog(UUID ConnectionId, WithLogRequest request, UUID user) {
@@ -43,6 +47,17 @@ public class WithLogService {
             .build();
 
         withLogRepository.save(withLog);
+        if (request.mediaList() != null) {
+            List<Media> medias = request.mediaList().stream()
+                .map(mr -> Media.builder()
+                    .withLog(withLog)
+                    .mediaUrl(mr.mediaUrl())
+                    .mediaType(mr.mediaType())
+                    .build())
+                .toList();
+
+            mediaRepository.saveAll(medias);
+        }
     }
 
     @Transactional
@@ -61,11 +76,10 @@ public class WithLogService {
     }
 
     @Transactional(readOnly = true)
-    public List<WithLogResponse> getWithLogs(UUID connectionId, UUID userId) {
+    public List<WithLogPreviewResponse> getWithLogPreviews(UUID connectionId, UUID userId) {
         UserConnection connection = userConnectionRepository.findById(connectionId)
             .orElseThrow(() -> new IllegalArgumentException("해당 연결이 존재하지 않습니다."));
 
-        // 유저가 이 연결의 주체인지 확인
         if (!connection.getUser().getId().equals(userId) &&
             !connection.getPartner().getId().equals(userId)) {
             throw new AccessDeniedException("접근 권한이 없습니다.");
@@ -73,8 +87,21 @@ public class WithLogService {
 
         List<WithLog> logs = withLogRepository.findByUserConnectionOrderByDateDesc(connection);
         return logs.stream()
-            .map(WithLogResponse::from)
+            .map(WithLogPreviewResponse::from)
             .toList();
     }
 
+    @Transactional(readOnly = true)
+    public WithLogResponse getWithLogDetail(UUID withLogId, UUID userId) {
+        WithLog withLog = withLogRepository.findById(withLogId)
+                .orElseThrow(() -> new IllegalArgumentException("게시글이 존재하지 않습니다."));
+
+        UserConnection connection = withLog.getUserConnection();
+        if (!connection.getUser().getId().equals(userId) &&
+            !connection.getPartner().getId().equals(userId)) {
+            throw new AccessDeniedException("접근 권한이 없습니다.");
+        }
+
+        return WithLogResponse.from(withLog);
+    }
 }
