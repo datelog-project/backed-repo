@@ -33,13 +33,13 @@ public class WithLogController {
 
     @PostMapping("{connectionId}/with-logs")
     public ResponseEntity<ApiResponse> createWithLog(@AuthenticationPrincipal UserAccount user,
-                                                    @PathVariable("connectionId") UUID ConnectionId, 
+                                                    @PathVariable UUID connectionId, 
                                                     @RequestBody @Valid WithLogRequest request) {
         
-        log.info("요청 connectionId: {}", ConnectionId);
+        log.info("요청 connectionId: {}", connectionId);
         log.info("로그인 userId: {}", user.getId());
 
-        withLogService.createWithLog(ConnectionId, request, user.getId());
+        withLogService.createWithLog(connectionId, request, user.getId());
         return ResponseEntity.ok(new ApiResponse("게시글이 등록되었습니다."));
     }
 

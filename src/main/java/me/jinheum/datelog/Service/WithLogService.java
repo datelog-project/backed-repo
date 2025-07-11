@@ -13,10 +13,10 @@ import me.jinheum.datelog.dto.WithLogResponse;
 import me.jinheum.datelog.entity.Media;
 import me.jinheum.datelog.entity.UserConnection;
 import me.jinheum.datelog.entity.WithLog;
-import me.jinheum.datelog.exception.AccessDeniedException;
 import me.jinheum.datelog.repository.MediaRepository;
 import me.jinheum.datelog.repository.UserConnectionRepository;
 import me.jinheum.datelog.repository.WithLogRepository;
+import me.jinheum.datelog.security.WithLogValidator;
 
 @Service
 @RequiredArgsConstructor
@@ -25,18 +25,17 @@ public class WithLogService {
     private final WithLogRepository withLogRepository;
     private final UserConnectionRepository userConnectionRepository;
     private final MediaRepository mediaRepository;
+    private final WithLogValidator withLogValidator;
 
     @Transactional
-    public void createWithLog(UUID ConnectionId, WithLogRequest request, UUID user) {
-        UserConnection Connection = userConnectionRepository.findById(ConnectionId)
+    public void createWithLog(UUID connectionId, WithLogRequest request, UUID userId) {
+        UserConnection connection = userConnectionRepository.findById(connectionId)
             .orElseThrow(() -> new IllegalArgumentException("해당 연결이 존재하지 않습니다."));
 
-        if (!Connection.getUser().getId().equals(user) &&
-            !Connection.getPartner().getId().equals(user)) {
-            throw new AccessDeniedException("접근 권한이 없습니다.");
-        }
+        withLogValidator.validateUserInConnection(connection, userId);
+
         WithLog withLog = WithLog.builder()
-            .userConnection(Connection)
+            .userConnection(connection)
             .date(request.date())
             .placeName(request.placeName())
             .placeAddress(request.placeAddress())
@@ -61,16 +60,13 @@ public class WithLogService {
     }
 
     @Transactional
-    public void deleteWithLog(UUID withLogId, UUID user) {
+    public void deleteWithLog(UUID withLogId, UUID userId) {
         WithLog withLog = withLogRepository.findById(withLogId)
             .orElseThrow(() -> new IllegalArgumentException("해당 로그가 존재하지 않습니다."));
 
         UserConnection connection = withLog.getUserConnection();
 
-        if (!connection.getUser().getId().equals(user) &&
-            !connection.getPartner().getId().equals(user)) {
-            throw new AccessDeniedException("접근 권한이 없습니다.");
-        }
+        withLogValidator.validateUserInConnection(connection, userId);
 
         withLogRepository.delete(withLog);
     }
@@ -80,10 +76,7 @@ public class WithLogService {
         UserConnection connection = userConnectionRepository.findById(connectionId)
             .orElseThrow(() -> new IllegalArgumentException("해당 연결이 존재하지 않습니다."));
 
-        if (!connection.getUser().getId().equals(userId) &&
-            !connection.getPartner().getId().equals(userId)) {
-            throw new AccessDeniedException("접근 권한이 없습니다.");
-        }
+        withLogValidator.validateUserInConnection(connection, userId);
 
         List<WithLog> logs = withLogRepository.findByUserConnectionOrderByDateDesc(connection);
         return logs.stream()
@@ -97,11 +90,9 @@ public class WithLogService {
                 .orElseThrow(() -> new IllegalArgumentException("게시글이 존재하지 않습니다."));
 
         UserConnection connection = withLog.getUserConnection();
-        if (!connection.getUser().getId().equals(userId) &&
-            !connection.getPartner().getId().equals(userId)) {
-            throw new AccessDeniedException("접근 권한이 없습니다.");
-        }
+        withLogValidator.validateUserInConnection(connection, userId);
 
         return WithLogResponse.from(withLog);
     }
+
 }
