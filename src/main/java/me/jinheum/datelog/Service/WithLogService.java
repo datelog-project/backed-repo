@@ -1,12 +1,14 @@
 package me.jinheum.datelog.service;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import me.jinheum.datelog.dto.WithLogRequest;
+import me.jinheum.datelog.dto.WithLogResponse;
 import me.jinheum.datelog.entity.UserConnection;
 import me.jinheum.datelog.entity.WithLog;
 import me.jinheum.datelog.exception.AccessDeniedException;
@@ -21,7 +23,7 @@ public class WithLogService {
     private final UserConnectionRepository userConnectionRepository;
 
     @Transactional
-    public void createWithLog(UUID ConnectionId,WithLogRequest request, UUID user) {
+    public void createWithLog(UUID ConnectionId, WithLogRequest request, UUID user) {
         UserConnection Connection = userConnectionRepository.findById(ConnectionId)
             .orElseThrow(() -> new IllegalArgumentException("해당 연결이 존재하지 않습니다."));
 
@@ -33,6 +35,9 @@ public class WithLogService {
             .userConnection(Connection)
             .date(request.date())
             .placeName(request.placeName())
+            .placeAddress(request.placeAddress())
+            .placeLat(request.placeLat())          
+            .placeLng(request.placeLng())
             .feelingScore(request.feelingScore())
             .note(request.note())
             .build();
@@ -54,4 +59,22 @@ public class WithLogService {
 
         withLogRepository.delete(withLog);
     }
+
+    @Transactional(readOnly = true)
+    public List<WithLogResponse> getWithLogs(UUID connectionId, UUID userId) {
+        UserConnection connection = userConnectionRepository.findById(connectionId)
+            .orElseThrow(() -> new IllegalArgumentException("해당 연결이 존재하지 않습니다."));
+
+        // 유저가 이 연결의 주체인지 확인
+        if (!connection.getUser().getId().equals(userId) &&
+            !connection.getPartner().getId().equals(userId)) {
+            throw new AccessDeniedException("접근 권한이 없습니다.");
+        }
+
+        List<WithLog> logs = withLogRepository.findByUserConnectionOrderByDateDesc(connection);
+        return logs.stream()
+            .map(WithLogResponse::from)
+            .toList();
+    }
+
 }

@@ -1,5 +1,6 @@
 package me.jinheum.datelog.entity;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -41,6 +42,12 @@ public class WithLog {
     private LocalDate date;
 
     private String placeName;
+
+    private String placeAddress;
+
+    private BigDecimal placeLat;
+
+    private BigDecimal placeLng; 
 
     @Min(1)
     @Max(10)

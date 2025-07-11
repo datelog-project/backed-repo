@@ -1,10 +1,12 @@
 package me.jinheum.datelog.controller;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.jinheum.datelog.dto.ApiResponse;
 import me.jinheum.datelog.dto.WithLogRequest;
+import me.jinheum.datelog.dto.WithLogResponse;
 import me.jinheum.datelog.entity.UserAccount;
 import me.jinheum.datelog.service.WithLogService;
 
@@ -47,5 +50,14 @@ public class WithLogController {
         withLogService.deleteWithLog(withLogId, user.getId());
 
         return ResponseEntity.ok(new ApiResponse("게시글이 삭제되었습니다."));
+    }
+
+    @GetMapping("{connectionId}/with-logs")
+    public ResponseEntity<List<WithLogResponse>> getWithLogs(
+            @PathVariable UUID connectionId,
+            @AuthenticationPrincipal UserAccount user
+    ) {
+        List<WithLogResponse> logs = withLogService.getWithLogs(connectionId, user.getId());
+        return ResponseEntity.ok(logs);
     }
 }
