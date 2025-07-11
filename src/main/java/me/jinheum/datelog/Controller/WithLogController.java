@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -69,5 +70,15 @@ public class WithLogController {
         
         WithLogResponse response = withLogService.getWithLogDetail(withLogId, user.getId());
         return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/with-logs/{withLogId}")
+    public ResponseEntity<WithLogResponse> updateWithLog(
+            @PathVariable UUID withLogId,
+            @RequestBody WithLogRequest request,
+            @AuthenticationPrincipal UserAccount user) {
+
+        WithLogResponse updated = withLogService.updateWithLog(withLogId, request, user.getId());
+        return ResponseEntity.ok(updated);
     }
 }

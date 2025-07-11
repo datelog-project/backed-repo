@@ -45,7 +45,6 @@ public class WithLogService {
             .note(request.note())
             .build();
 
-        withLogRepository.save(withLog);
         if (request.mediaList() != null) {
             List<Media> medias = request.mediaList().stream()
                 .map(mr -> Media.builder()
@@ -57,12 +56,13 @@ public class WithLogService {
 
             mediaRepository.saveAll(medias);
         }
+        withLogRepository.save(withLog);
     }
 
     @Transactional
     public void deleteWithLog(UUID withLogId, UUID userId) {
         WithLog withLog = withLogRepository.findById(withLogId)
-            .orElseThrow(() -> new IllegalArgumentException("해당 로그가 존재하지 않습니다."));
+            .orElseThrow(() -> new IllegalArgumentException("게시글이 존재하지 않습니다."));
 
         UserConnection connection = withLog.getUserConnection();
 
@@ -74,7 +74,7 @@ public class WithLogService {
     @Transactional(readOnly = true)
     public List<WithLogPreviewResponse> getWithLogPreviews(UUID connectionId, UUID userId) {
         UserConnection connection = userConnectionRepository.findById(connectionId)
-            .orElseThrow(() -> new IllegalArgumentException("해당 연결이 존재하지 않습니다."));
+            .orElseThrow(() -> new IllegalArgumentException("게시글이 존재하지 않습니다."));
 
         withLogValidator.validateUserInConnection(connection, userId);
 
@@ -95,4 +95,38 @@ public class WithLogService {
         return WithLogResponse.from(withLog);
     }
 
+    @Transactional
+    public WithLogResponse updateWithLog(UUID withLogId, WithLogRequest request, UUID userId) {
+        WithLog withLog = withLogRepository.findById(withLogId)
+                .orElseThrow(() -> new IllegalArgumentException("게시글이 존재하지 않습니다."));
+
+        UserConnection connection = withLog.getUserConnection();
+        withLogValidator.validateUserInConnection(connection, userId);
+
+        withLog.setDate(request.date());
+        withLog.setPlaceName(request.placeName());
+        withLog.setPlaceAddress(request.placeAddress());
+        withLog.setPlaceLat(request.placeLat());
+        withLog.setPlaceLng(request.placeLng());
+        withLog.setFeelingScore(request.feelingScore());
+        withLog.setNote(request.note());
+
+        if (request.mediaList() != null) {
+            withLog.getMediaList().clear();
+
+            List<Media> medias = request.mediaList().stream()
+                .map(mr -> Media.builder()
+                    .withLog(withLog)
+                    .mediaUrl(mr.mediaUrl())
+                    .mediaType(mr.mediaType())
+                    .build())
+                .toList();
+
+            withLog.getMediaList().addAll(medias);
+            mediaRepository.saveAll(medias);
+        }
+        withLogRepository.save(withLog);
+
+        return WithLogResponse.from(withLog);
+    }
 }
