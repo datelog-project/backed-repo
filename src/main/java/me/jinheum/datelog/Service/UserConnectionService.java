@@ -1,6 +1,7 @@
 package me.jinheum.datelog.service;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -25,6 +26,20 @@ public class UserConnectionService {
     public UUID invitePartner(UserAccount user, UserAccount partner) {
         connectionValidator.validateInvite(user, partner);
 
+        Optional<UserConnection> rejected = userConnectionRepository.findByUserAndPartner(partner, user)
+            .filter(conn -> conn.getStatus() == ConnectionStatus.REJECTED);
+        if (rejected.isPresent()) {
+            UserConnection connection = rejected.get();
+
+            connection.setUser(user);
+            connection.setPartner(partner);
+            connection.setStatus(ConnectionStatus.PENDING);
+            connection.setStartedAt(LocalDateTime.now());
+
+            userConnectionRepository.save(connection);
+            return connection.getId();
+        }
+        
         UserConnection connection = UserConnection.builder()
                 .user(user)
                 .partner(partner)
