@@ -44,7 +44,8 @@ public class UserConnectionService {
 
     public void rejectInvite(UUID connectionId, UUID currentUserId) {
         UserConnection connection = connectionValidator.validatePartnerInvitation(connectionId, currentUserId);
-        userConnectionRepository.delete(connection);
+        connection.setStatus(ConnectionStatus.REJECTED);
+        userConnectionRepository.save(connection);
     }
 
     public void endConnection(UUID connectionId, UUID currentUserId) {
