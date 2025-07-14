@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
+import me.jinheum.datelog.dto.WithLogResponse;
 import me.jinheum.datelog.entity.SharedLink;
 import me.jinheum.datelog.entity.WithLog;
 import me.jinheum.datelog.exception.NotFoundException;
@@ -40,5 +41,15 @@ public class SharedLinkService {
 
         sharedLinkRepository.save(sharedLink);
         return sharedLink.getId();
+    }
+
+    @Transactional(readOnly = true)
+    public WithLogResponse getSharedLogView(UUID sharedLinkId) {
+        SharedLink sharedLink = sharedLinkRepository.findById(sharedLinkId)
+            .orElseThrow(() -> new NotFoundException("존재하지 않는 공유 링크입니다."));
+
+        WithLog withLog = sharedLink.getWithLog();
+
+        return WithLogResponse.from(withLog);
     }
 }
