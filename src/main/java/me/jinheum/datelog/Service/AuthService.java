@@ -1,5 +1,6 @@
 package me.jinheum.datelog.service;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -16,10 +17,13 @@ import lombok.RequiredArgsConstructor;
 import me.jinheum.datelog.config.JwtProperties;
 import me.jinheum.datelog.dto.SigninRequest;
 import me.jinheum.datelog.dto.SigninResponse;
+import me.jinheum.datelog.dto.UserInfoResponse;
 import me.jinheum.datelog.entity.UserAccount;
+import me.jinheum.datelog.entity.UserConnection;
 import me.jinheum.datelog.exception.InvalidCredentialsException;
 import me.jinheum.datelog.exception.InvalidTokenException;
 import me.jinheum.datelog.repository.UserAccountRepository;
+import me.jinheum.datelog.repository.UserConnectionRepository;
 import me.jinheum.datelog.security.JwtProvider;
 import me.jinheum.datelog.util.CookieUtil;
 
@@ -34,6 +38,7 @@ public class AuthService {
     private final UserAccountRepository userAccountRepository;
     private final PasswordEncoder passwordEncoder;
     private final StringRedisTemplate redisTemplate;
+    private final UserConnectionRepository userConnectionRepository;
 
     public SigninResponse signin(SigninRequest request, HttpServletResponse response) {
         UserAccount user = userAccountRepository.findByEmail(request.email())
@@ -53,7 +58,18 @@ public class AuthService {
 
         response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
 
-        return new SigninResponse(user.getId(), accessToken);
+        Optional<UserConnection> connectionOpt = userConnectionRepository.findByUserOrPartner(user);
+        UUID connectionId = null;
+        String status = "NONE";
+
+        if (connectionOpt.isPresent()) {
+            connectionId = connectionOpt.get().getId();
+            status = connectionOpt.get().getStatus().name();
+        }
+
+        UserInfoResponse userInfo = new UserInfoResponse(user.getId(), connectionId, status);
+
+        return new SigninResponse(userInfo, accessToken);
     }
     
     
