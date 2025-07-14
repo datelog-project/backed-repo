@@ -26,13 +26,13 @@ import me.jinheum.datelog.service.WithLogService;
 
 @Slf4j
 @RestController
-@RequestMapping("/connections")
+@RequestMapping("/with-logs")
 @RequiredArgsConstructor
 public class WithLogController {
 
     private final WithLogService withLogService;
 
-    @PostMapping("{connectionId}/with-logs")
+    @PostMapping("/{connectionId}")
     public ResponseEntity<ApiResponse> createWithLog(@AuthenticationPrincipal UserAccount user,
                                                     @PathVariable UUID connectionId, 
                                                     @RequestBody @Valid WithLogRequest request) {
@@ -44,17 +44,7 @@ public class WithLogController {
         return ResponseEntity.ok(new ApiResponse("게시글이 등록되었습니다."));
     }
 
-    @DeleteMapping("/with-logs/{withLogId}")
-    public ResponseEntity<ApiResponse> deleteWithLog(
-            @PathVariable UUID withLogId,
-            @AuthenticationPrincipal UserAccount user) {
-
-        withLogService.deleteWithLog(withLogId, user.getId());
-
-        return ResponseEntity.ok(new ApiResponse("게시글이 삭제되었습니다."));
-    }
-
-    @GetMapping("{connectionId}/with-logs")
+    @GetMapping("/{connectionId}")
     public ResponseEntity<List<WithLogPreviewResponse>> getWithLogs(
             @PathVariable UUID connectionId,
             @AuthenticationPrincipal UserAccount user
@@ -63,7 +53,7 @@ public class WithLogController {
         return ResponseEntity.ok(previews);
     }
 
-    @GetMapping("with-logs/{withLogId}")
+    @GetMapping("/{withLogId}")
     public ResponseEntity<WithLogResponse> getWithLogDetail(
             @PathVariable UUID withLogId,
             @AuthenticationPrincipal UserAccount user) {
@@ -72,7 +62,7 @@ public class WithLogController {
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/with-logs/{withLogId}")
+    @PutMapping("/{withLogId}")
     public ResponseEntity<WithLogResponse> updateWithLog(
             @PathVariable UUID withLogId,
             @RequestBody WithLogRequest request,
@@ -80,5 +70,15 @@ public class WithLogController {
 
         WithLogResponse updated = withLogService.updateWithLog(withLogId, request, user.getId());
         return ResponseEntity.ok(updated);
+    }
+
+    @DeleteMapping("/{withLogId}")
+    public ResponseEntity<ApiResponse> deleteWithLog(
+            @PathVariable UUID withLogId,
+            @AuthenticationPrincipal UserAccount user) {
+
+        withLogService.deleteWithLog(withLogId, user.getId());
+
+        return ResponseEntity.ok(new ApiResponse("게시글이 삭제되었습니다."));
     }
 }
