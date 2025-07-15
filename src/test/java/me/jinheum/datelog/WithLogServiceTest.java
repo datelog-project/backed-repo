@@ -5,7 +5,9 @@ import static org.mockito.Mockito.when;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -39,19 +41,24 @@ class WithLogServiceTest {
     void createWithLog_shouldSaveWithLog_whenConnectionExists() {
         // given
         UUID connectionId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();  
 
         WithLogRequest request = new WithLogRequest(
-            LocalDate.of(2025, 7, 9),
-            "카페 블루",
-            8,
-            "좋은 대화였다"
-        );
+        LocalDate.now(),
+        "데이트 제목",
+        "데이트 내용",
+        BigDecimal.valueOf(37.5665),   
+        BigDecimal.valueOf(126.9780),  
+        8,                             
+        "맑음",                         
+        List.of()                      
+    );
 
         UserConnection mockConnection = new UserConnection();
         when(userConnectionRepository.findById(connectionId)).thenReturn(Optional.of(mockConnection));
 
         // when
-        withLogService.createWithLog(connectionId, request);
+        withLogService.createWithLog(connectionId, request, userId);
 
         // then
         ArgumentCaptor<WithLog> captor = ArgumentCaptor.forClass(WithLog.class);
@@ -69,17 +76,22 @@ class WithLogServiceTest {
     void createWithLog_shouldThrowException_whenConnectionNotFound() {
         // given
         UUID connectionId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();  
         WithLogRequest request = new WithLogRequest(
-            LocalDate.of(2025, 7, 9),
-            "카페 블루",
-            8,
-            "좋은 대화였다"
-        );
+        LocalDate.now(),
+        "데이트 제목",
+        "데이트 내용",
+        BigDecimal.valueOf(37.5665),   
+        BigDecimal.valueOf(126.9780),  
+        8,                             
+        "맑음",                         
+        List.of()                      
+    );
 
         when(userConnectionRepository.findById(connectionId)).thenReturn(Optional.empty());
 
         // when + then
-        assertThatThrownBy(() -> withLogService.createWithLog(connectionId, request))
+        assertThatThrownBy(() -> withLogService.createWithLog(connectionId, request, userId))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessage("해당 연결이 존재하지 않습니다.");
     }

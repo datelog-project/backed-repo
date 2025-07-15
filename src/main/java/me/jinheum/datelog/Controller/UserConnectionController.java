@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import me.jinheum.datelog.dto.ApiResponse;
 import me.jinheum.datelog.dto.InviteRequest;
@@ -27,6 +29,7 @@ public class UserConnectionController {
     private final UserConnectionService connectionService;
     private final UserAccountService userAccountService;
 
+    @Operation(summary = "초대 보내기", security = @SecurityRequirement(name = "bearerAuth"))
     @PostMapping("/invite")
     public ResponseEntity<InviteResponse> invite(@RequestBody InviteRequest request,
                                             @AuthenticationPrincipal UserAccount user) {
@@ -35,6 +38,7 @@ public class UserConnectionController {
         return ResponseEntity.ok(new InviteResponse("초대를 보냈습니다.", connectionId));
     }
 
+    @Operation(summary = "초대 수락하기", security = @SecurityRequirement(name = "bearerAuth"))
     @PostMapping("/{connectionId}/accept")
     public ResponseEntity<ApiResponse> acceptInvite(@PathVariable UUID connectionId,
                                         @AuthenticationPrincipal UserAccount user) {
@@ -42,6 +46,7 @@ public class UserConnectionController {
         return ResponseEntity.ok(new ApiResponse("초대를 수락했습니다."));
     } //ok
 
+    @Operation(summary = "초대 거절하기", security = @SecurityRequirement(name = "bearerAuth"))
     @PostMapping("/{connectionId}/reject")
     public ResponseEntity<ApiResponse> rejectInvite(@PathVariable UUID connectionId,
                                         @AuthenticationPrincipal UserAccount user) {
@@ -49,6 +54,7 @@ public class UserConnectionController {
         return ResponseEntity.ok(new ApiResponse("초대를 거절했습니다."));
     } //ok
 
+    @Operation(summary = "상대방과 연결 끊기", security = @SecurityRequirement(name = "bearerAuth"))
     @PostMapping("/{connectionId}/end")
     public ResponseEntity<ApiResponse> endConnection(@PathVariable UUID connectionId,
                                            @AuthenticationPrincipal UserAccount user) {
@@ -56,6 +62,7 @@ public class UserConnectionController {
         return ResponseEntity.ok(new ApiResponse("연결이 종료되었습니다."));
     } //ok
 
+    @Operation(summary = "원래 연결되었던 상대와 재연결", security = @SecurityRequirement(name = "bearerAuth"))
     @PostMapping("/reconnect")
     public ResponseEntity<InviteResponse> reconnect(@RequestBody ReconnectRequest request,
                                        @AuthenticationPrincipal UserAccount user) {

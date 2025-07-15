@@ -5,6 +5,7 @@ import java.io.IOException;
 import org.springframework.lang.NonNull;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -29,7 +30,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     @NonNull FilterChain filterChain) throws ServletException, IOException {
         
         String path = request.getRequestURI();
-        if (path.startsWith("/auth/signin") || path.startsWith("/auth/signup") || path.startsWith("/auth/reissue")) {
+        if (path.startsWith("/auth/")
+        || path.startsWith("/swagger-ui")
+        || path.startsWith("/v3/api-docs")
+        || path.startsWith("/swagger-resources")
+        || path.startsWith("/webjars")
+        || path.equals("/swagger-ui.html")
+        || path.equals("/error")
+        || path.startsWith("/.well-known")) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -50,6 +58,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         } catch (InvalidTokenException e) {
             ResponseUtil.writeUnauthorizedResponse(response, "유효하지 않은 토큰입니다.");
+            return;
+        } catch (UsernameNotFoundException e) {
+            ResponseUtil.writeUnauthorizedResponse(response, "유저를 찾을 수 없습니다.");
             return;
         }
 

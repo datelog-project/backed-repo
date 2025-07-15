@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import me.jinheum.datelog.dto.ShareResponse;
 import me.jinheum.datelog.dto.WithLogResponse;
@@ -21,6 +23,7 @@ public class SharedLinkController {
 
     private final SharedLinkService sharedLinkService;
     
+    @Operation(summary = "공유 할 URL 등록", security = @SecurityRequirement(name = "bearerAuth"))
     @PostMapping("/with-logs/{withLogId}/share")
     public ResponseEntity<ShareResponse> createShareLink(
         @PathVariable UUID withLogId,
@@ -32,6 +35,7 @@ public class SharedLinkController {
         return ResponseEntity.ok(new ShareResponse("공유 링크 생성됨 : ", shareUrl));
     }
 
+    @Operation(summary = "공유 된 링크 열람", security = @SecurityRequirement(name = "bearerAuth" ))
     @GetMapping("/share/{sharedLinkId}")
     public ResponseEntity<WithLogResponse> getSharedLog(@PathVariable UUID sharedLinkId) {
         WithLogResponse response = sharedLinkService.getSharedLogView(sharedLinkId);

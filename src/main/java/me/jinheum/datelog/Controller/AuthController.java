@@ -5,7 +5,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ public class AuthController {
     
     private final AuthService authService;
 
+    @Operation(summary = "리프레시 토큰 재발급")
     @PostMapping("/reissue") //리프레시 토큰 재발급
     public ResponseEntity<AccessTokenResponse> reissue(
             HttpServletRequest request,
@@ -30,6 +32,7 @@ public class AuthController {
         return ResponseEntity.ok(new AccessTokenResponse(accessToken));
     }
 
+    @Operation(summary = "로그인" )
     @PostMapping("/signin") //로그인
     public ResponseEntity<SigninResponse> signin(@RequestBody SigninRequest request,
                                                HttpServletResponse response) {

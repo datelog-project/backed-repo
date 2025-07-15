@@ -33,6 +33,7 @@ public class SignoutFilter extends OncePerRequestFilter {
         @NonNull HttpServletRequest request,
         @NonNull HttpServletResponse response,
         @NonNull FilterChain filterChain) throws ServletException, IOException {
+            
         if (request.getRequestURI().equals("/auth/signout") && request.getMethod().equals("POST")) {
             
             String token = jwtProvider.resolveAccessToken(request);

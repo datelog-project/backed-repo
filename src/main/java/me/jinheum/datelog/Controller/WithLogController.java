@@ -14,9 +14,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import me.jinheum.datelog.dto.ApiResponse;
 import me.jinheum.datelog.dto.WithLogPreviewResponse;
 import me.jinheum.datelog.dto.WithLogRequest;
@@ -24,7 +25,6 @@ import me.jinheum.datelog.dto.WithLogResponse;
 import me.jinheum.datelog.entity.UserAccount;
 import me.jinheum.datelog.service.WithLogService;
 
-@Slf4j
 @RestController
 @RequestMapping("/with-logs")
 @RequiredArgsConstructor
@@ -32,18 +32,17 @@ public class WithLogController {
 
     private final WithLogService withLogService;
 
+    @Operation(summary = "게시글 등록하기", security = @SecurityRequirement(name = "bearerAuth"))
     @PostMapping("/{connectionId}")
     public ResponseEntity<ApiResponse> createWithLog(@AuthenticationPrincipal UserAccount user,
                                                     @PathVariable UUID connectionId, 
                                                     @RequestBody @Valid WithLogRequest request) {
-        
-        log.info("요청 connectionId: {}", connectionId);
-        log.info("로그인 userId: {}", user.getId());
 
         withLogService.createWithLog(connectionId, request, user.getId());
         return ResponseEntity.ok(new ApiResponse("게시글이 등록되었습니다."));
     }
 
+    @Operation(summary = "모든 게시글 확인하기", security = @SecurityRequirement(name = "bearerAuth"))
     @GetMapping("/{connectionId}")
     public ResponseEntity<List<WithLogPreviewResponse>> getWithLogs(
             @PathVariable UUID connectionId,
@@ -53,7 +52,8 @@ public class WithLogController {
         return ResponseEntity.ok(previews);
     }
 
-    @GetMapping("/{withLogId}")
+    @Operation(summary = "게시글 상세보기", security = @SecurityRequirement(name = "bearerAuth"))
+    @GetMapping("/{withLogId}/details")
     public ResponseEntity<WithLogResponse> getWithLogDetail(
             @PathVariable UUID withLogId,
             @AuthenticationPrincipal UserAccount user) {
@@ -62,6 +62,7 @@ public class WithLogController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(summary = "게시글 수정하기", security = @SecurityRequirement(name = "bearerAuth"))
     @PutMapping("/{withLogId}")
     public ResponseEntity<WithLogResponse> updateWithLog(
             @PathVariable UUID withLogId,
@@ -72,6 +73,7 @@ public class WithLogController {
         return ResponseEntity.ok(updated);
     }
 
+    @Operation(summary = "게시글 삭제하기", security = @SecurityRequirement(name = "bearerAuth"))
     @DeleteMapping("/{withLogId}")
     public ResponseEntity<ApiResponse> deleteWithLog(
             @PathVariable UUID withLogId,
