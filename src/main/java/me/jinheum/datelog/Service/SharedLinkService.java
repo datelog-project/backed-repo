@@ -14,6 +14,7 @@ import me.jinheum.datelog.repository.SharedLinkRepository;
 import me.jinheum.datelog.repository.WithLogRepository;
 import me.jinheum.datelog.security.WithLogValidator;
 
+
 @Service
 @RequiredArgsConstructor
 public class SharedLinkService {

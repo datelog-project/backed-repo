@@ -35,7 +35,7 @@ public class SharedLinkController {
         return ResponseEntity.ok(new ShareResponse("공유 링크 생성됨 : ", shareUrl));
     }
 
-    @Operation(summary = "공유 된 링크 열람", security = @SecurityRequirement(name = "bearerAuth" ))
+    @Operation(summary = "공유 된 링크 열람")
     @GetMapping("/share/{sharedLinkId}")
     public ResponseEntity<WithLogResponse> getSharedLog(@PathVariable UUID sharedLinkId) {
         WithLogResponse response = sharedLinkService.getSharedLogView(sharedLinkId);

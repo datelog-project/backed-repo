@@ -44,6 +44,7 @@ public class WithLogService {
             .feelingScore(request.feelingScore())
             .note(request.note())
             .build();
+        withLogRepository.save(withLog);
 
         if (request.mediaList() != null) {
             List<Media> medias = request.mediaList().stream()
@@ -56,7 +57,6 @@ public class WithLogService {
 
             mediaRepository.saveAll(medias);
         }
-        withLogRepository.save(withLog);
     }
 
     @Transactional
