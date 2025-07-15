@@ -41,6 +41,7 @@ public class SecurityConfig {
         .requestMatchers(HttpMethod.POST, "/auth/signin").permitAll()
         .requestMatchers(HttpMethod.POST, "/auth/signup").permitAll()
         .requestMatchers(HttpMethod.POST, "/auth/reissue").permitAll()
+        .requestMatchers(HttpMethod.GET, "/share/**").permitAll()
         .anyRequest().authenticated())
         .addFilterBefore(signoutFilter(), UsernamePasswordAuthenticationFilter.class)//로그인 처리보다 앞에서 처리함
         .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
