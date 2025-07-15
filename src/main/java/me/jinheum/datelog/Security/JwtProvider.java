@@ -3,13 +3,13 @@ package me.jinheum.datelog.security;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.UnsupportedJwtException;
@@ -19,8 +19,10 @@ import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import me.jinheum.datelog.config.JwtProperties;
+import me.jinheum.datelog.entity.UserAccount;
 import me.jinheum.datelog.exception.InvalidTokenException;
 import me.jinheum.datelog.exception.TokenExpiredException;
+import me.jinheum.datelog.repository.UserAccountRepository;
 import me.jinheum.datelog.service.TokenService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -34,7 +36,7 @@ public class JwtProvider {
     private final JwtProperties jwtProperties;
     private final TokenService tokenService;
     private Key key;
-    private final UserDetailsService userDetailsService;
+    private final UserAccountRepository userAccountRepository;
 
     @PostConstruct
     public void init() {
@@ -118,7 +120,10 @@ public class JwtProvider {
 
     public Authentication getAuthentication(String token) {
         String email = getEmail(token);
-        UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-        return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
+        UserAccount userAccount = userAccountRepository.findByEmail(email)
+            .orElseThrow(() -> new UsernameNotFoundException("유저가 없습니다."));
+
+        return new UsernamePasswordAuthenticationToken(userAccount, null, List.of());
     }
+
 }
