@@ -27,5 +27,5 @@ public interface UserConnectionRepository extends JpaRepository<UserConnection ,
     
     
     @Query("SELECT uc FROM UserConnection uc WHERE uc.user = :user OR uc.partner = :user")
-    Optional<UserConnection> findByUserOrPartner(UserAccount user);
+    List<UserConnection> findByUserOrPartner(UserAccount user);
 }

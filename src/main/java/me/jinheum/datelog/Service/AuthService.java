@@ -1,6 +1,6 @@
 package me.jinheum.datelog.service;
 
-import java.util.Optional;
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -20,6 +20,7 @@ import me.jinheum.datelog.dto.SigninResponse;
 import me.jinheum.datelog.dto.UserInfoResponse;
 import me.jinheum.datelog.entity.UserAccount;
 import me.jinheum.datelog.entity.UserConnection;
+import me.jinheum.datelog.entity.enums.ConnectionStatus;
 import me.jinheum.datelog.exception.InvalidCredentialsException;
 import me.jinheum.datelog.exception.InvalidTokenException;
 import me.jinheum.datelog.repository.UserAccountRepository;
@@ -58,16 +59,46 @@ public class AuthService {
 
         response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
 
-        Optional<UserConnection> connectionOpt = userConnectionRepository.findByUserOrPartner(user);
+        List<UserConnection> connections = userConnectionRepository.findByUserOrPartner(user);
         UUID connectionId = null;
-        String status = "NONE";
+        UUID userId = null;
+        UUID partnerId = null;
+        String status = null;
+        String partnerName = null;
+        String partnerEmail = null;
 
-        if (connectionOpt.isPresent()) {
-            connectionId = connectionOpt.get().getId();
-            status = connectionOpt.get().getStatus().name();
+        UserConnection selected = connections.stream()
+                .filter(conn -> conn.getStatus() == ConnectionStatus.CONNECTED)
+                .findFirst()
+                .orElseGet(() ->
+                    connections.stream()
+                        .filter(conn -> conn.getStatus() == ConnectionStatus.PENDING)
+                        .findFirst()
+                        .orElseGet(() ->
+                            connections.stream()
+                                .filter(conn -> conn.getStatus() == ConnectionStatus.ENDED)
+                                .findFirst()
+                                .orElse(null)
+                        )
+                );
+
+        if (selected != null) {
+            connectionId = selected.getId();
+            status = selected.getStatus().name();
+            userId = selected.getUser().getId();
+            partnerId = selected.getPartner().getId();
+            partnerId = selected.getUser().getId();
+
+            if (selected.getUser().getId().equals(user.getId())) {
+                partnerName = selected.getPartner().getName();
+                partnerEmail = selected.getPartner().getEmail();
+            } else {
+                partnerName = selected.getUser().getName();
+                partnerEmail = selected.getUser().getEmail();
+            }
         }
 
-        UserInfoResponse userInfo = new UserInfoResponse(user.getId(), connectionId, status);
+        UserInfoResponse userInfo = new UserInfoResponse(user.getId(), connectionId, status, userId, partnerId, partnerName,  partnerEmail);
 
         return new SigninResponse(userInfo, accessToken);
     }

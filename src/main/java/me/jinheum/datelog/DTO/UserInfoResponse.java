@@ -5,5 +5,9 @@ import java.util.UUID;
 public record UserInfoResponse(
     UUID id,
     UUID userConnectionId,
-    String userConnectionStatus
+    String userConnectionStatus,
+    UUID userId,
+    UUID partnerId,
+    String partnerName,
+    String partnerEmail
 ) {}
