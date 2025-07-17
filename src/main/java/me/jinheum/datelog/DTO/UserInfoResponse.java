@@ -9,5 +9,6 @@ public record UserInfoResponse(
     UUID userId,
     UUID partnerId,
     String partnerName,
-    String partnerEmail
+    String partnerEmail,
+    Boolean isSender
 ) {}

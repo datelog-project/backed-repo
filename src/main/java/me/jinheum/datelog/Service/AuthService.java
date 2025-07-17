@@ -1,6 +1,5 @@
 package me.jinheum.datelog.service;
 
-import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -14,20 +13,18 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import me.jinheum.datelog.config.JwtProperties;
 import me.jinheum.datelog.dto.SigninRequest;
 import me.jinheum.datelog.dto.SigninResponse;
-import me.jinheum.datelog.dto.UserInfoResponse;
 import me.jinheum.datelog.entity.UserAccount;
-import me.jinheum.datelog.entity.UserConnection;
-import me.jinheum.datelog.entity.enums.ConnectionStatus;
 import me.jinheum.datelog.exception.InvalidCredentialsException;
 import me.jinheum.datelog.exception.InvalidTokenException;
 import me.jinheum.datelog.repository.UserAccountRepository;
-import me.jinheum.datelog.repository.UserConnectionRepository;
 import me.jinheum.datelog.security.JwtProvider;
 import me.jinheum.datelog.util.CookieUtil;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -39,7 +36,6 @@ public class AuthService {
     private final UserAccountRepository userAccountRepository;
     private final PasswordEncoder passwordEncoder;
     private final StringRedisTemplate redisTemplate;
-    private final UserConnectionRepository userConnectionRepository;
 
     public SigninResponse signin(SigninRequest request, HttpServletResponse response) {
         UserAccount user = userAccountRepository.findByEmail(request.email())
@@ -59,48 +55,7 @@ public class AuthService {
 
         response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
 
-        List<UserConnection> connections = userConnectionRepository.findByUserOrPartner(user);
-        UUID connectionId = null;
-        UUID userId = null;
-        UUID partnerId = null;
-        String status = null;
-        String partnerName = null;
-        String partnerEmail = null;
-
-        UserConnection selected = connections.stream()
-                .filter(conn -> conn.getStatus() == ConnectionStatus.CONNECTED)
-                .findFirst()
-                .orElseGet(() ->
-                    connections.stream()
-                        .filter(conn -> conn.getStatus() == ConnectionStatus.PENDING)
-                        .findFirst()
-                        .orElseGet(() ->
-                            connections.stream()
-                                .filter(conn -> conn.getStatus() == ConnectionStatus.ENDED)
-                                .findFirst()
-                                .orElse(null)
-                        )
-                );
-
-        if (selected != null) {
-            connectionId = selected.getId();
-            status = selected.getStatus().name();
-            userId = selected.getUser().getId();
-            partnerId = selected.getPartner().getId();
-            partnerId = selected.getUser().getId();
-
-            if (selected.getUser().getId().equals(user.getId())) {
-                partnerName = selected.getPartner().getName();
-                partnerEmail = selected.getPartner().getEmail();
-            } else {
-                partnerName = selected.getUser().getName();
-                partnerEmail = selected.getUser().getEmail();
-            }
-        }
-
-        UserInfoResponse userInfo = new UserInfoResponse(user.getId(), connectionId, status, userId, partnerId, partnerName,  partnerEmail);
-
-        return new SigninResponse(userInfo, accessToken);
+        return new SigninResponse(accessToken);
     }
     
     
@@ -123,10 +78,9 @@ public class AuthService {
         String newRefreshToken = jwtProvider.generatedRefreshToken(userId,email);
         tokenService.saveRefreshToken(userId, newRefreshToken);
 
-        ResponseCookie refreshCookie = cookieUtil.createRefreshTokenCookie(refreshToken, jwtProperties.getRefreshTokenValidity());
+        ResponseCookie refreshCookie = cookieUtil.createRefreshTokenCookie(newRefreshToken, jwtProperties.getRefreshTokenValidity());
 
         response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
-
 
         return newAccessToken;
     }
