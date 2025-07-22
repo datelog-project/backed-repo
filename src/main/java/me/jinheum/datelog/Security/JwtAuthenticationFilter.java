@@ -40,7 +40,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         || path.equals("/swagger-ui.html")
         || path.equals("/error")
         || path.startsWith("/.well-known")
-        || path.startsWith("/share/")) {
+        || path.startsWith("/share/")
+        || path.startsWith("/uploads/")) {
             filterChain.doFilter(request, response);
             return;
         }

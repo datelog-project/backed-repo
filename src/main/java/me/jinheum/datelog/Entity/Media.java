@@ -38,7 +38,7 @@ public class Media {
     private String mediaUrl;
 
     @Column(nullable = false)
-    private String mediaType; // 예: "image", "video"
+    private String mediaType;
 
     @CreationTimestamp
     private LocalDateTime createdAt;

@@ -14,8 +14,10 @@ public record WithLogPreviewResponse(
     BigDecimal placeLat,
     BigDecimal placeLng,
     LocalDate date,
-    String thumbnailUrl, // 썸네일용
-    String previewNote // note 일부만
+    String thumbnailUrl,
+    String previewNote,
+    Long cost,
+    Integer feelingScore
 ) {
     public static WithLogPreviewResponse from(WithLog log) {
         String thumbnail = log.getMediaList().stream()
@@ -34,7 +36,9 @@ public record WithLogPreviewResponse(
             thumbnail,
             log.getNote() != null && log.getNote().length() > 20
                 ? log.getNote().substring(0, 20) + "..."
-                : log.getNote()
+                : log.getNote(),
+            log.getCost(),
+            log.getFeelingScore()
         );
     }
 }

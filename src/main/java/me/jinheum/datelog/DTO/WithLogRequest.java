@@ -12,5 +12,6 @@ public record WithLogRequest(
     BigDecimal placeLng,
     Integer feelingScore,
     String note,
+    Long cost,
     List<MediaRequest> mediaList
 ) {}

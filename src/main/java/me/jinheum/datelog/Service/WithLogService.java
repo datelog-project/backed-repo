@@ -43,6 +43,7 @@ public class WithLogService {
             .placeLng(request.placeLng())
             .feelingScore(request.feelingScore())
             .note(request.note())
+            .cost(request.cost())
             .build();
         withLogRepository.save(withLog);
 
@@ -110,6 +111,7 @@ public class WithLogService {
         withLog.setPlaceLng(request.placeLng());
         withLog.setFeelingScore(request.feelingScore());
         withLog.setNote(request.note());
+        withLog.setCost(request.cost());
 
         if (request.mediaList() != null) {
             withLog.getMediaList().clear();

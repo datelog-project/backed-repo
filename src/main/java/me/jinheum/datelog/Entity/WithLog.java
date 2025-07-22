@@ -61,6 +61,9 @@ public class WithLog {
 
     @Lob
     private String note;
+
+    @Min(0)
+    private Long cost;
     
     @CreationTimestamp
     private LocalDateTime createdAt;

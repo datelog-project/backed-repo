@@ -6,7 +6,7 @@ public record UserInfoResponse(
     UUID id,
     UUID userConnectionId,
     String userConnectionStatus,
-    UUID userId,
+    String userName,
     UUID partnerId,
     String partnerName,
     String partnerEmail,

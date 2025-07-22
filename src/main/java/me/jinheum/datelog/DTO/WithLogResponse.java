@@ -17,6 +17,7 @@ public record WithLogResponse(
     BigDecimal placeLng,
     Integer feelingScore,
     String note,
+    Long cost,
     LocalDateTime createdAt,
     LocalDateTime updatedAt,
     List<MediaResponse> mediaList
@@ -34,6 +35,7 @@ public record WithLogResponse(
             log.getPlaceLng(),
             log.getFeelingScore(),
             log.getNote(),
+            log.getCost(),
             log.getCreatedAt(),
             log.getUpdatedAt(),
             mediaResponses
