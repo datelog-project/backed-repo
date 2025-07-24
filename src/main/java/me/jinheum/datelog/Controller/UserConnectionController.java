@@ -4,10 +4,12 @@ package me.jinheum.datelog.controller;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import me.jinheum.datelog.dto.ApiResponse;
 import me.jinheum.datelog.dto.InviteRequest;
 import me.jinheum.datelog.dto.InviteResponse;
+import me.jinheum.datelog.dto.ReconnectCheckResponse;
 import me.jinheum.datelog.dto.ReconnectRequest;
 import me.jinheum.datelog.entity.UserAccount;
 import me.jinheum.datelog.service.UserAccountService;
@@ -69,4 +72,14 @@ public class UserConnectionController {
         UUID connectionId = connectionService.reconnectByEmail(user.getId(), request.partnerEmail());
         return ResponseEntity.ok(new InviteResponse("재결합 요청을 보냈습니다.", connectionId));
     } //ok
+
+    @GetMapping("/check")
+    public ResponseEntity<ReconnectCheckResponse> checkConnection(
+            @RequestParam String partnerEmail,
+            @AuthenticationPrincipal UserAccount user) {
+
+        boolean exists = connectionService.existsPreviousConnection(user, partnerEmail);
+
+        return ResponseEntity.ok(new ReconnectCheckResponse(exists));
+    }
 }

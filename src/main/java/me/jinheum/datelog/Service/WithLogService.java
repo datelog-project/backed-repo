@@ -6,6 +6,8 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
 import lombok.RequiredArgsConstructor;
 import me.jinheum.datelog.dto.WithLogPreviewResponse;
 import me.jinheum.datelog.dto.WithLogRequest;
@@ -26,6 +28,7 @@ public class WithLogService {
     private final UserConnectionRepository userConnectionRepository;
     private final MediaRepository mediaRepository;
     private final WithLogValidator withLogValidator;
+    private final FileStorageService fileStorageService;
 
     @Transactional
     public void createWithLog(UUID connectionId, WithLogRequest request, UUID userId) {
@@ -97,7 +100,7 @@ public class WithLogService {
     }
 
     @Transactional
-    public WithLogResponse updateWithLog(UUID withLogId, WithLogRequest request, UUID userId) {
+    public WithLogResponse updateWithLog(UUID withLogId, WithLogRequest request, List<MultipartFile> images, UUID userId) {
         WithLog withLog = withLogRepository.findById(withLogId)
                 .orElseThrow(() -> new IllegalArgumentException("게시글이 존재하지 않습니다."));
 
@@ -113,22 +116,39 @@ public class WithLogService {
         withLog.setNote(request.note());
         withLog.setCost(request.cost());
 
+        withLog.getMediaList().clear();
+
+        // 기존 mediaList (URL로 전달된 것) 추가
         if (request.mediaList() != null) {
-            withLog.getMediaList().clear();
-
-            List<Media> medias = request.mediaList().stream()
-                .map(mr -> Media.builder()
-                    .withLog(withLog)
-                    .mediaUrl(mr.mediaUrl())
-                    .mediaType(mr.mediaType())
-                    .build())
-                .toList();
-
-            withLog.getMediaList().addAll(medias);
-            mediaRepository.saveAll(medias);
+            List<Media> mediaEntities = request.mediaList().stream()
+                    .map(mr -> Media.builder()
+                            .withLog(withLog)
+                            .mediaUrl(mr.mediaUrl())
+                            .mediaType(mr.mediaType())
+                            .build())
+                    .toList();
+            withLog.getMediaList().addAll(mediaEntities);
         }
+
+        // MultipartFile 처리
+        if (images != null && !images.isEmpty()) {
+            List<Media> uploadedMedias = images.stream()
+                    .map(file -> {
+                        String uploadedUrl = fileStorageService.upload(file); // 이 부분은 구현 필요
+                        return Media.builder()
+                                .withLog(withLog)
+                                .mediaUrl(uploadedUrl)
+                                .mediaType("IMAGE") // 또는 자동 판별
+                                .build();
+                    })
+                    .toList();
+            withLog.getMediaList().addAll(uploadedMedias);
+        }
+
+        mediaRepository.saveAll(withLog.getMediaList());
         withLogRepository.save(withLog);
 
         return WithLogResponse.from(withLog);
     }
+
 }

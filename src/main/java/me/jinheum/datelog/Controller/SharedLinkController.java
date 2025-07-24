@@ -30,7 +30,7 @@ public class SharedLinkController {
         @AuthenticationPrincipal UserAccount user) {
 
         UUID sharedLinkId = sharedLinkService.createSharedLink(withLogId, user.getId());
-        String shareUrl = "http://localhost:8080/share/" + sharedLinkId.toString();
+        String shareUrl = "http://localhost:5173/share/" + sharedLinkId.toString();
 
         return ResponseEntity.ok(new ShareResponse("공유 링크 생성됨 : ", shareUrl));
     }
