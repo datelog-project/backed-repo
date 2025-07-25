@@ -11,6 +11,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -51,8 +52,10 @@ public class WithLog {
 
     private String placeAddress;
 
+    @Column(precision = 15, scale = 10)
     private BigDecimal placeLat;
 
+    @Column(precision = 15, scale = 10)
     private BigDecimal placeLng; 
 
     @Min(1)
