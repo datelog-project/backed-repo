@@ -76,4 +76,7 @@ public class WithLog {
 
     @OneToMany(mappedBy = "withLog", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Media> mediaList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "withLog", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<SharedLink> sharedLinks = new ArrayList<>();
 }
