@@ -85,11 +85,11 @@ public class ConnectionValidator {
             throw new IllegalArgumentException("재결합은 연결 당사자만 요청할 수 있습니다.");
         } //ok
 
-        if (hasAnyActiveConnection(connectionUser, connectionUser)) {
+        if (hasAnyActiveConnection(connectionUser, currentUser)) {
             throw new IllegalStateException("이미 연결된 유저가 있어 재결합할 수 없습니다.");
         } //ok
 
-        if (connection.getStatus() != ConnectionStatus.ENDED) {
+        if (connection.getStatus() != ConnectionStatus.ENDED&& connection.getStatus() != ConnectionStatus.REJECTED) {
             throw new IllegalArgumentException("재결합 가능한 연결이 없습니다.");
         }
 

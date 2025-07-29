@@ -13,6 +13,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import me.jinheum.datelog.config.JwtProperties;
 import me.jinheum.datelog.dto.SigninRequest;
 import me.jinheum.datelog.dto.SigninResponse;
@@ -23,6 +24,7 @@ import me.jinheum.datelog.repository.UserAccountRepository;
 import me.jinheum.datelog.security.JwtProvider;
 import me.jinheum.datelog.util.CookieUtil;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -53,7 +55,7 @@ public class AuthService {
 
         response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
 
-        return new SigninResponse(user.getId(), accessToken);
+        return new SigninResponse(accessToken);
     }
     
     
@@ -76,10 +78,9 @@ public class AuthService {
         String newRefreshToken = jwtProvider.generatedRefreshToken(userId,email);
         tokenService.saveRefreshToken(userId, newRefreshToken);
 
-        ResponseCookie refreshCookie = cookieUtil.createRefreshTokenCookie(refreshToken, jwtProperties.getRefreshTokenValidity());
+        ResponseCookie refreshCookie = cookieUtil.createRefreshTokenCookie(newRefreshToken, jwtProperties.getRefreshTokenValidity());
 
         response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
-
 
         return newAccessToken;
     }

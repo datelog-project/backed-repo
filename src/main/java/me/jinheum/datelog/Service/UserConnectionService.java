@@ -84,4 +84,11 @@ public class UserConnectionService {
         
         return connection.getId();
     }
+
+    public boolean existsPreviousConnection(UserAccount user, String partnerEmail) {
+        UserAccount partner = userAccountService.getUserByEmail(partnerEmail);
+        // 과거 연결 기록 있는지 여부 조회
+        Optional<UserConnection> connections = userConnectionRepository.findByUserAndPartner(user, partner);
+        return !connections.isEmpty();
+    }
 }

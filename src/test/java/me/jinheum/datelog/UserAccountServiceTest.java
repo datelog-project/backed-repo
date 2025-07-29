@@ -120,7 +120,7 @@ class UserAccountServiceTest {
         SigninResponse result = authService.signin(request, response);
 
         assertNotNull(result);
-        assertEquals(user.getId(), result.id());
+        assertEquals(user.getId(), result.user().id());
         assertEquals("mockAccessToken", result.accessToken());
     }
 }

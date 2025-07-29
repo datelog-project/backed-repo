@@ -24,4 +24,8 @@ public interface UserConnectionRepository extends JpaRepository<UserConnection ,
         "(uc.user = :user2 AND uc.partner = :user1)")
     Optional<UserConnection> findByUserAndPartner(@Param("user1") UserAccount user1, @Param("user2") UserAccount user2);
     //원래 초대한 사람만 재연결 가능, 초대 받은 사람만 END 가능 했는데 양방향으로 바꿔봄
+    
+    
+    @Query("SELECT uc FROM UserConnection uc WHERE uc.user = :user OR uc.partner = :user")
+    List<UserConnection> findByUserOrPartner(UserAccount user);
 }
