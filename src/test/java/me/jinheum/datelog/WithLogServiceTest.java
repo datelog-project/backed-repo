@@ -39,28 +39,26 @@ class WithLogServiceTest {
 
     @Test
     void createWithLog_shouldSaveWithLog_whenConnectionExists() {
-        // given
         UUID connectionId = UUID.randomUUID();
-        UUID userId = UUID.randomUUID();  
+        UUID userId = UUID.randomUUID();
 
         WithLogRequest request = new WithLogRequest(
-        LocalDate.now(),
-        "데이트 제목",
-        "데이트 내용",
-        BigDecimal.valueOf(37.5665),   
-        BigDecimal.valueOf(126.9780),  
-        8,                             
-        "맑음",                         
-        List.of()                      
-    );
+            LocalDate.now(),
+            "데이트 장소 이름",
+            "서울시 강남구 역삼동",
+            BigDecimal.valueOf(37.5665),
+            BigDecimal.valueOf(126.9780),
+            8,
+            "맑음",
+            10000L,
+            List.of()
+        );
 
         UserConnection mockConnection = new UserConnection();
         when(userConnectionRepository.findById(connectionId)).thenReturn(Optional.of(mockConnection));
 
-        // when
         withLogService.createWithLog(connectionId, request, userId);
 
-        // then
         ArgumentCaptor<WithLog> captor = ArgumentCaptor.forClass(WithLog.class);
         verify(withLogRepository).save(captor.capture());
 
@@ -72,27 +70,29 @@ class WithLogServiceTest {
         assertThat(saved.getNote()).isEqualTo(request.note());
     }
 
+
     @Test
     void createWithLog_shouldThrowException_whenConnectionNotFound() {
-        // given
         UUID connectionId = UUID.randomUUID();
-        UUID userId = UUID.randomUUID();  
+        UUID userId = UUID.randomUUID();
+
         WithLogRequest request = new WithLogRequest(
-        LocalDate.now(),
-        "데이트 제목",
-        "데이트 내용",
-        BigDecimal.valueOf(37.5665),   
-        BigDecimal.valueOf(126.9780),  
-        8,                             
-        "맑음",                         
-        List.of()                      
-    );
+            LocalDate.now(),
+            "데이트 제목",
+            "데이트 내용",
+            BigDecimal.valueOf(37.5665),
+            BigDecimal.valueOf(126.9780),
+            8,
+            "맑음",
+            0L,
+            List.of()
+        );
 
         when(userConnectionRepository.findById(connectionId)).thenReturn(Optional.empty());
 
-        // when + then
         assertThatThrownBy(() -> withLogService.createWithLog(connectionId, request, userId))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessage("해당 연결이 존재하지 않습니다.");
     }
+
 }

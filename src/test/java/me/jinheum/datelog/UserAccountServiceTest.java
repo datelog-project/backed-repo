@@ -2,6 +2,7 @@ package me.jinheum.datelog;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
@@ -119,8 +120,11 @@ class UserAccountServiceTest {
 
         SigninResponse result = authService.signin(request, response);
 
+        String setCookieHeader = response.getHeader("Set-Cookie");
+        assertNotNull(setCookieHeader);
+        assertTrue(setCookieHeader.contains("refreshToken=mockRefreshToken"));
         assertNotNull(result);
-        assertEquals(user.getId(), result.user().id());
+        assertEquals(user.getId(), result.id());
         assertEquals("mockAccessToken", result.accessToken());
     }
 }
