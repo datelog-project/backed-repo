@@ -68,7 +68,7 @@ class UserConnectionServiceTest {
         when(userConnectionRepository.save(any(UserConnection.class)))
             .thenAnswer(invocation -> invocation.getArgument(0));
 
-        userConnectionService.invitePartner(inviterId, partnerEmail);
+        userConnectionService.invitePartner(inviter, partner);
 
         verify(userConnectionRepository, times(1)).save(any(UserConnection.class));
     }

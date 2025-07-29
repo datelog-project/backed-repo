@@ -33,7 +33,7 @@ public class AuthController {
     @PostMapping("/signin") //로그인
     public ResponseEntity<SigninResponse> signin(@RequestBody SigninRequest request,
                                                HttpServletResponse response) {
-        SigninResponse loginResponse = authService.signin(request, response);
-        return ResponseEntity.ok(loginResponse);
+        SigninResponse signinResponse  = authService.signin(request, response);
+        return ResponseEntity.ok(signinResponse);
     }
 }
